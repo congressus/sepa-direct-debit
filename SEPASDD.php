@@ -483,7 +483,7 @@ class SEPASDD {
         if(in_array($type,$types)){
             return true;
         }else{
-            return $type" is not a valid Sepa Direct Debit Transaction Type.";
+            return $type." is not a valid Sepa Direct Debit Transaction Type.";
         }
     }//validateDDType
     
