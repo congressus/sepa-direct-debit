@@ -216,6 +216,7 @@ class SEPASDD {
             $PmtTpInfNode->appendChild($SvcLvlNode);
                 $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
             $PmtTpInfNode->appendChild($LclInstrmNode);
+            $PmtTpInfNode->appendChild($SeqTpNode);
         $PmtInfNode->appendChild($PmtTpInfNode);
         $PmtInfNode->appendChild($ReqdColltnDtNode);
         
@@ -434,7 +435,7 @@ class SEPASDD {
      * @return BOOLEAN TRUE if valid, FALSE if invalid.
      */
     private function validateIBAN($IBAN){
-        $result = preg_match("[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}",$IBAN);
+        $result = preg_match("/[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}/",$IBAN);
         if ( $result > 0 && $result !== false){
             return true;
         }else{
