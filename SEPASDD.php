@@ -95,7 +95,7 @@ class SEPASDD {
         //Set the values for the nodes
         $MsgIdNode->nodeValue = $this->makeMsgId();
         $CreDtTmNode->nodeValue = date("c");
-        $NmNode->nodeValue = $this->config['name'];
+        $NmNode->nodeValue = htmlentities($this->config['name'],ENT_QUOTES);
         
         //Append the nodes
         $InitgPtyNode->appendChild($NmNode);
@@ -186,11 +186,11 @@ class SEPASDD {
         $Cd_LclInstrm_Node->nodeValue   = "CORE";
         $SeqTpNode->nodeValue           = $payment['type']; //Define a check for: FRST RCUR OOFF FNAL
         $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
-        $Nm_Cdtr_Node->nodeValue        = $this->config['name'];
+        $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
         $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
         $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
         $ChrgBrNode->nodeValue          = "SLEV";
-        $Nm_CdtrSchmeId_Node->nodeValue = $this->config['name'];
+        $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
         $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
         $PrtryNode->nodeValue           = "SEPA";
         $EndToEndIdNode->nodeValue      = $this->makeId();
@@ -201,9 +201,9 @@ class SEPASDD {
         $MndtIdNode->nodeValue          = $payment['mandate_id'];
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
         $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
-        $Nm_Dbtr_Node->nodeValue        = $payment['name'];
+        $Nm_Dbtr_Node->nodeValue        = htmlentities($payment['name'], ENT_QUOTES);
         $IBAN_DbtrAcct_Node->nodeValue  = $payment['IBAN'];
-        $UstrdNode->nodeValue           = $payment['description'];
+        $UstrdNode->nodeValue           = htmlentities($payment['description'], ENT_QUOTES);
          
         //Fold the nodes
         $PmtInfNode->appendChild($PmtInfIdNode);
