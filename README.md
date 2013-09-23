@@ -133,9 +133,6 @@ The required arguments are:
 
 ####Example:
 
-<AdrLine>straatnaam debtor 99</AdrLine>
-<AdrLine>9999 XX stadsnaam</AdrLine>
-
 Add the postal address for a Debtor
 
 ```php
