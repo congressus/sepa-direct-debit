@@ -1,11 +1,11 @@
-SEPA SDD (Sepa Direct Debit) 1.0
------------------------------------
-Author: 	Congressus, The Netherlands
-Date:		14-05-2013
-Description:	A PHP class to create Sepa Direct Debit XML Files
------------------------------------
+#SEPA SDD (Sepa Direct Debit) 1.0
 
-1. INSTALLATION
+<table>
+<tr><td>Author:</td><td>Congressus, The Netherlands</td></tr> 
+<tr><td>Date:</td><td>14-05-2013</td></tr> 
+<tr><td>Description</td><td>A PHP class to create Sepa Direct Debit XML Files</td></tr> 
+</table>
+##1. INSTALLATION
 
 SEPA SDD requires PHP 5, no other libraries are required.
 
@@ -15,7 +15,7 @@ To install, copy the SEPASDD.php class to a folder on the webserver and include 
 require_once([path_from_webroot_to_folder]/SEPASDD.php);
 ```
 
-2. CONFIGURATION
+##2. CONFIGURATION
 
 SEPA SSD requires a config array, which is validated on initiation.
 The following parameters are required:
@@ -29,7 +29,7 @@ The following parameters are required:
 - currency:	    The currency in which the amounts are defined. 
 		    Allowed: ISO 4217.
 
-Example:
+####Example:
 
 ```php
 $config = array("name" => "Test",
@@ -41,9 +41,9 @@ $config = array("name" => "Test",
                 );
 ```
 
-3. USAGE
+##3. USAGE
 
-3.1 Initialization
+###3.1 Initialization
 
 Create an instance of the class with an configuration as such:
 
@@ -55,7 +55,7 @@ try{
 }
 ```
 
-3.2 Create a payment
+###3.2 Create a payment
 
 SEPA SDD uses the addPayment method for creating payments, it requires a payment array.
 The following parameters are required:
@@ -75,7 +75,7 @@ The following parameters are required:
                     Allowed: ISO 8601 (YYYY-MM-DD). For mandates before SEPA requirements this is: 2009-11-01.
 - description:      The description of the transaction.
 
-Example:
+####Example:
 
 ```php
 $payment = array("name" => "Test von Testenstein",
@@ -92,7 +92,7 @@ $payment = array("name" => "Test von Testenstein",
 
 Then use the addPayment method to add the payment to the file:
 
-Example:
+####Example:
 
 ```php
 try{
@@ -104,12 +104,12 @@ try{
 
 You can use this method multiple times to add more payments.
 
-3.3 Save the file
+###3.3 Save the file
 
 To save the file, use the "save" method, this will return the XML as a string.
 If you want to save to file, you have to do this yourself.
 
-Example:
+####Example:
 
 ```php
 try{
@@ -121,7 +121,7 @@ try{
 
 After this, please reinitialize the class if you want to create another file.
 
-3.4 Adding custom fields
+###3.4 Adding custom fields
 
 SEPA SDD has a special method for adding custom fields. This method is called addCustomNode.
 The required arguments are:
@@ -131,7 +131,33 @@ The required arguments are:
 - value:            Its value, default "".
 - attr:             An array containing key => value pairs defining the attributes.
 
-4 LICENSE
+####Example:
+
+<AdrLine>straatnaam debtor 99</AdrLine>
+<AdrLine>9999 XX stadsnaam</AdrLine>
+
+Add the postal address for a Debtor
+
+```php
+try{
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr","PstlAdr");
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr","AdrLine","Rode Weeshuisstraat 25");
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr","AdrLine","9712 ET Groningen");
+}catch(Exception $e){
+    echo $e->getMessage();
+}
+```
+
+Will create
+
+```xml
+<PstlAdr>
+    <AdrLine>Rode Weeshuisstraat 25</AdrLine>
+    <AdrLine>9712 ET Groningen</AdrLine>
+</PstlAdr>
+```
+
+##4 LICENSE
 
 MIT LICENSE
 
