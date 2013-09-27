@@ -1,4 +1,4 @@
-#SEPA SDD (Sepa Direct Debit) 1.0
+#SEPA SDD (Sepa Direct Debit) 2.0
 
 <table>
 <tr><td>Author:</td><td>Congressus, The Netherlands</td></tr> 
@@ -28,6 +28,12 @@ The following parameters are required:
 - creditor_id:	The creditor's id, contact your bank if you do not know this.
 - currency:	    The currency in which the amounts are defined. 
 		    Allowed: ISO 4217.
+
+#####Note:
+When setting batch to true, SEPASDD will create a batch for each Direct Debit
+transaction type ("FRST","RCUR", etc). and required collection date. This
+means that all "FRST" transactions with collection date 2014-01-30 will be 
+grouped in a batch.
 
 ####Example:
 
@@ -137,9 +143,9 @@ Add the postal address for a Debtor
 
 ```php
 try{
-    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr","PstlAdr");
-    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr","AdrLine","Rode Weeshuisstraat 25");
-    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf/DrctDbtTxInf/Dbtr/PstlAdr","AdrLine","9712 ET Groningen");
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr","PstlAdr");
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr/PstlAdr","AdrLine","Rode Weeshuisstraat 25");
+    $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr/PstlAdr","AdrLine","9712 ET Groningen");
 }catch(Exception $e){
     echo $e->getMessage();
 }
@@ -153,6 +159,22 @@ Will create
     <AdrLine>9712 ET Groningen</AdrLine>
 </PstlAdr>
 ```
+
+###3.5 Validation
+
+To validate against the pain.008.001.02 schema definition, you can
+use the validate() method. This requires the XML as string as argument.
+
+####Example
+
+```php
+try{
+    $xml = $SEPASDD->save();
+    $validation = $SEPASDD->validate($xml);
+    print_r($validation);
+}catch(Exception $e){
+    echo $e->getMessage();
+}
 
 ##4 LICENSE
 
