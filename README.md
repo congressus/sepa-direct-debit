@@ -175,6 +175,7 @@ try{
 }catch(Exception $e){
     echo $e->getMessage();
 }
+```
 
 ##4 LICENSE
 
