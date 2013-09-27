@@ -26,13 +26,14 @@
 
 
 /**
- * SEPA SSD (Sepa Direct Debit) 1.0
+ * SEPA SSD (Sepa Direct Debit) 2.0
  * This class creates a Sepa Direct Debit XML File.
  */
 class SEPASDD {
     
     private $config;
     private $XML;
+    private $batchArray = array();
     
     function __construct($config){
         //Check the config
@@ -125,37 +126,62 @@ class SEPASDD {
         //Get the CstmrDrctDbtInitnNode 
         $CstmrDrctDbtInitnNode  = $this->getCstmrDrctDbtInitnNode();
         
-        //Create the required nodes, a lot of them.
-        $PmtInfNode             = $this->xml->createElement("PmtInf");
-        $PmtInfIdNode           = $this->xml->createElement("PmtInfId");
-        $PmtMtdNode             = $this->xml->createElement("PmtMtd");
-        $BtchBookgNode          = $this->xml->createElement("BtchBookg");
-        $NbOfTxsNode            = $this->xml->createElement("NbOfTxs");
-        $CtrlSumNode            = $this->xml->createElement("CtrlSum");
-        $PmtTpInfNode           = $this->xml->createElement("PmtTpInf");
-        $SvcLvlNode             = $this->xml->createElement("SvcLvl");
-        $Cd_SvcLvl_Node         = $this->xml->createElement("Cd");
-        $LclInstrmNode          = $this->xml->createElement("LclInstrm");
-        $Cd_LclInstrm_Node      = $this->xml->createElement("Cd");
-        $SeqTpNode              = $this->xml->createElement("SeqTp");
-        $ReqdColltnDtNode       = $this->xml->createElement("ReqdColltnDt");
-        $CdtrNode               = $this->xml->createElement("Cdtr");
-        $Nm_Cdtr_Node           = $this->xml->createElement("Nm");
-        $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
-        $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
-        $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
-        $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-        $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
-        $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
-        $ChrgBrNode             = $this->xml->createElement("ChrgBr");
-        $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
-        $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
-        $Id_CdtrSchmeId_Node    = $this->xml->createElement("Id");
-        $PrvtIdNode             = $this->xml->createElement("PrvtId");
-        $OthrNode               = $this->xml->createElement("Othr");
-        $Id_Othr_Node           = $this->xml->createElement("Id");
-        $SchmeNmNode            = $this->xml->createElement("SchmeNm");
-        $PrtryNode              = $this->xml->createElement("Prtry");
+        //If there is a batch, the batch will create this information.
+        if($this->config['batch'] == 'false'){
+            $PmtInfNode             = $this->xml->createElement("PmtInf");
+            $PmtInfIdNode           = $this->xml->createElement("PmtInfId");
+            $PmtMtdNode             = $this->xml->createElement("PmtMtd");
+            $BtchBookgNode          = $this->xml->createElement("BtchBookg");
+            $NbOfTxsNode            = $this->xml->createElement("NbOfTxs");
+            $CtrlSumNode            = $this->xml->createElement("CtrlSum");
+            $PmtTpInfNode           = $this->xml->createElement("PmtTpInf");
+            $SvcLvlNode             = $this->xml->createElement("SvcLvl");
+            $Cd_SvcLvl_Node         = $this->xml->createElement("Cd");
+            $LclInstrmNode          = $this->xml->createElement("LclInstrm");
+            $Cd_LclInstrm_Node      = $this->xml->createElement("Cd");
+            $SeqTpNode              = $this->xml->createElement("SeqTp");
+            $ReqdColltnDtNode       = $this->xml->createElement("ReqdColltnDt");
+            $CdtrNode               = $this->xml->createElement("Cdtr");
+            $Nm_Cdtr_Node           = $this->xml->createElement("Nm");
+            $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
+            $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
+            $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
+            $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+            $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+            $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+            $ChrgBrNode             = $this->xml->createElement("ChrgBr");
+            $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
+            $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
+            $Id_CdtrSchmeId_Node    = $this->xml->createElement("Id");
+            $PrvtIdNode             = $this->xml->createElement("PrvtId");
+            $OthrNode               = $this->xml->createElement("Othr");
+            $Id_Othr_Node           = $this->xml->createElement("Id");
+            $SchmeNmNode            = $this->xml->createElement("SchmeNm");
+            $PrtryNode              = $this->xml->createElement("Prtry");
+            
+            $PmtInfIdNode->nodeValue        = $this->makeId();
+            $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
+            $BtchBookgNode->nodeValue       = $this->config['batch'];
+            $NbOfTxsNode->nodeValue         = "1";
+            $CtrlSumNode->nodeValue         = $this->intToDecimal($payment['amount']);
+            $Cd_SvcLvl_Node->nodeValue      = "SEPA";
+            $Cd_LclInstrm_Node->nodeValue   = "CORE";
+            $SeqTpNode->nodeValue           = $payment['type']; //Define a check for: FRST RCUR OOFF FNAL
+            $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
+            $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
+            $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
+            $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+            $ChrgBrNode->nodeValue          = "SLEV";
+            $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
+            $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
+            $PrtryNode->nodeValue           = "SEPA";
+            
+        }else{
+            //Get the batch node for this kind of payment to add the DrctDbtTxInf node.
+            $batch = $this->getBatch($payment['type'],$payment['collection_date']);
+        }
+        
+        //Create the payment node.
         $DrctDbtTxInfNode       = $this->xml->createElement("DrctDbtTxInf");
         $PmtIdNode              = $this->xml->createElement("PmtId");
         $EndToEndIdNode         = $this->xml->createElement("EndToEndId");
@@ -174,27 +200,8 @@ class SEPASDD {
         $IBAN_DbtrAcct_Node     = $this->xml->createElement("IBAN");
         $RmtInfNode             = $this->xml->createElement("RmtInf");
         $UstrdNode              = $this->xml->createElement("Ustrd");
-        
-        
-        //Fill in the info
-        $PmtInfIdNode->nodeValue        = $this->makeId();
-        $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
-        $BtchBookgNode->nodeValue       = $this->config['batch'];
-        $NbOfTxsNode->nodeValue         = "1";
-        $CtrlSumNode->nodeValue         = $this->intToDecimal($payment['amount']);
-        $Cd_SvcLvl_Node->nodeValue      = "SEPA";
-        $Cd_LclInstrm_Node->nodeValue   = "CORE";
-        $SeqTpNode->nodeValue           = $payment['type']; //Define a check for: FRST RCUR OOFF FNAL
-        $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
-        $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
-        $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
-        $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
-        $ChrgBrNode->nodeValue          = "SLEV";
-        $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
-        $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
-        $PrtryNode->nodeValue           = "SEPA";
-        $EndToEndIdNode->nodeValue      = $this->makeId();
 
+        //Set the payment node information
         $InstdAmtNode->setAttribute("Ccy",$this->config['currency']);
         $InstdAmtNode->nodeValue        = $this->intToDecimal($payment['amount']);
         
@@ -204,45 +211,50 @@ class SEPASDD {
         $Nm_Dbtr_Node->nodeValue        = htmlentities($payment['name'], ENT_QUOTES);
         $IBAN_DbtrAcct_Node->nodeValue  = $payment['IBAN'];
         $UstrdNode->nodeValue           = htmlentities($payment['description'], ENT_QUOTES);
-         
-        //Fold the nodes
-        $PmtInfNode->appendChild($PmtInfIdNode);
-        $PmtInfNode->appendChild($PmtMtdNode);
-        $PmtInfNode->appendChild($BtchBookgNode);
-        $PmtInfNode->appendChild($NbOfTxsNode);
-        $PmtInfNode->appendChild($CtrlSumNode);
+        $EndToEndIdNode->nodeValue      = $this->makeId();
         
-                $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
-            $PmtTpInfNode->appendChild($SvcLvlNode);
-                $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
-            $PmtTpInfNode->appendChild($LclInstrmNode);
-            $PmtTpInfNode->appendChild($SeqTpNode);
-        $PmtInfNode->appendChild($PmtTpInfNode);
-        $PmtInfNode->appendChild($ReqdColltnDtNode);
+        //Fold the nodes, if batch is enabled, some of this will be done by the batch.
+        if($batch === false){
+            $PmtInfNode->appendChild($PmtInfIdNode);
+            $PmtInfNode->appendChild($PmtMtdNode);
+            $PmtInfNode->appendChild($BtchBookgNode);
+            $PmtInfNode->appendChild($NbOfTxsNode);
+            $PmtInfNode->appendChild($CtrlSumNode);
+            
+                    $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
+                $PmtTpInfNode->appendChild($SvcLvlNode);
+                    $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
+                $PmtTpInfNode->appendChild($LclInstrmNode);
+                $PmtTpInfNode->appendChild($SeqTpNode);
+            $PmtInfNode->appendChild($PmtTpInfNode);
+            $PmtInfNode->appendChild($ReqdColltnDtNode);
+            
+                $CdtrNode->appendChild($Nm_Cdtr_Node);
+            $PmtInfNode->appendChild($CdtrNode);
+            
+                    $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
+                $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
+            $PmtInfNode->appendChild($CdtrAcctNode);
+            
+                    $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+                $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+            $PmtInfNode->appendChild($CdtrAgtNode);
+            
+            $PmtInfNode->appendChild($ChrgBrNode);
+            
+                $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
+                            $OthrNode->appendChild($Id_Othr_Node);
+                                $SchmeNmNode->appendChild($PrtryNode);
+                            $OthrNode->appendChild($SchmeNmNode);
+                        $PrvtIdNode->appendChild($OthrNode);
+                    $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
+                $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
+            $PmtInfNode->appendChild($CdtrSchmeIdNode);
+            
+                    
+        }
+                $PmtIdNode->appendChild($EndToEndIdNode);    
         
-            $CdtrNode->appendChild($Nm_Cdtr_Node);
-        $PmtInfNode->appendChild($CdtrNode);
-        
-                $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
-            $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
-        $PmtInfNode->appendChild($CdtrAcctNode);
-        
-                $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
-            $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-        $PmtInfNode->appendChild($CdtrAgtNode);
-        
-        $PmtInfNode->appendChild($ChrgBrNode);
-        
-            $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
-                        $OthrNode->appendChild($Id_Othr_Node);
-                            $SchmeNmNode->appendChild($PrtryNode);
-                        $OthrNode->appendChild($SchmeNmNode);
-                    $PrvtIdNode->appendChild($OthrNode);
-                $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
-            $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
-        $PmtInfNode->appendChild($CdtrSchmeIdNode);
-        
-                $PmtIdNode->appendChild($EndToEndIdNode);
             $DrctDbtTxInfNode->appendChild($PmtIdNode);     
             $DrctDbtTxInfNode->appendChild($InstdAmtNode);
             
@@ -264,9 +276,23 @@ class SEPASDD {
                 
                 $RmtInfNode->appendChild($UstrdNode);
             $DrctDbtTxInfNode->appendChild($RmtInfNode);
-        $PmtInfNode->appendChild($DrctDbtTxInfNode);
+            
+                       $PmtIdNode->appendChild($EndToEndIdNode);
+
         
-        $CstmrDrctDbtInitnNode->appendChild($PmtInfNode);
+        if($batch === false){
+            
+            //Add to the document
+            $PmtInfNode->appendChild($DrctDbtTxInfNode);
+            $CstmrDrctDbtInitnNode->appendChild($PmtInfNode);
+        }else{
+            //Update the batch metrics
+            $batch['ctrlSum']->nodeValue += $payment['amount'];
+            $batch['nbOfTxs']->nodeValue++;
+            
+            //Add to the batch
+            $batch['node']->appendChild($DrctDbtTxInfNode);
+        }
         
     }//addPayment
     
@@ -280,6 +306,15 @@ class SEPASDD {
         return $result;
     }//save
     
+    /**
+     * Function to validate xml against the pain.008.001.02 schema definition.
+     * @param $xml The xml, as a string, to validate agianst the schema.
+     */
+    public function validate($xml){
+        $domdoc = new DOMDocument();
+        $domdoc->loadXML($result);
+        return $domdoc->schemaValidate("pain.008.001.02.xsd");
+    }//validate
         
 
     /**
@@ -297,7 +332,7 @@ class SEPASDD {
         }
         $newnode = $this->xml->createElement($name);
         if ( $value != "" ) {
-            $newnode->nodeValue = $name;
+            $newnode->nodeValue = $value;
         }
         if ( !empty($attr) ) {
             foreach($attr as $attr_name => $attr_value){
@@ -308,10 +343,19 @@ class SEPASDD {
     }//addCustomNode
     
     /**
-     * Function to finalize the document, completes the header with metadata.
+     * Function to finalize the document, completes the header with metadata, and processes batches.
      */
     private function finalize(){
-        $trxCount = $this->xml->getElementsByTagName("PmtInf");
+        if ( !empty( $this->batchArray ) ) {
+            $CstmrDrctDbtInitnNode = $this->getCstmrDrctDbtInitnNode();
+            foreach ( $this->batchArray as $batch ){
+                $batch['ctrlSum']->nodeValue = $this->intToDecimal($batch['ctrlSum']->nodeValue);
+                $CstmrDrctDbtInitnNode->appendChild($batch['node']);
+            }
+        }
+        
+
+        $trxCount = $this->xml->getElementsByTagName("DrctDbtTxInf");
         $trxCount = $trxCount->length;
         $trxAmounts = $this->xml->getElementsByTagName("InstdAmt");
         $trxAmountArray = array();
@@ -559,7 +603,7 @@ class SEPASDD {
             $name = substr($name,0,22);
         }
         return $name."_".$random;
-    }
+    }//makeId
     
     /**
      * Function to get the CstmrDrctDbtInitnNode from the current document.
@@ -573,5 +617,115 @@ class SEPASDD {
         }
         return $CstmrDrctDbtInitnNodeList->item(0);
     }//getCstmrDrctDbtInitnNode
+    
+    /**
+     * Function to create a batch (PmtInf with BtchBookg set true) element.
+     * @param $type The DirectDebit type for this batch.
+     * @param $date The required collection date.
+     */
+    private function getBatch($type,$date){
+        
+        //If the batch for this type and date already exists, return it.
+        if($this->validateDDType($type) && 
+           $this->validateDate($date) && 
+           array_key_exists($type."::".$date,$this->batchArray)
+           ){
+            return $this->batchArray[$type."::".$date];
+        }
+        
+        //Create the PmtInf element and its subelements
+        $PmtInfNode             = $this->xml->createElement("PmtInf");
+        $PmtInfIdNode           = $this->xml->createElement("PmtInfId");
+        $PmtMtdNode             = $this->xml->createElement("PmtMtd");
+        $BtchBookgNode          = $this->xml->createElement("BtchBookg");
+        $NbOfTxsNode            = $this->xml->createElement("NbOfTxs");
+        $CtrlSumNode            = $this->xml->createElement("CtrlSum");
+        $PmtTpInfNode           = $this->xml->createElement("PmtTpInf");
+        $SvcLvlNode             = $this->xml->createElement("SvcLvl");
+        $Cd_SvcLvl_Node         = $this->xml->createElement("Cd");
+        $LclInstrmNode          = $this->xml->createElement("LclInstrm");
+        $Cd_LclInstrm_Node      = $this->xml->createElement("Cd");
+        $SeqTpNode              = $this->xml->createElement("SeqTp");
+        $ReqdColltnDtNode       = $this->xml->createElement("ReqdColltnDt");
+        $CdtrNode               = $this->xml->createElement("Cdtr");
+        $Nm_Cdtr_Node           = $this->xml->createElement("Nm");
+        $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
+        $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
+        $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
+        $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+        $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+        $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+        $ChrgBrNode             = $this->xml->createElement("ChrgBr");
+        $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
+        $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
+        $Id_CdtrSchmeId_Node    = $this->xml->createElement("Id");
+        $PrvtIdNode             = $this->xml->createElement("PrvtId");
+        $OthrNode               = $this->xml->createElement("Othr");
+        $Id_Othr_Node           = $this->xml->createElement("Id");
+        $SchmeNmNode            = $this->xml->createElement("SchmeNm");
+        $PrtryNode              = $this->xml->createElement("Prtry");
+        
+        //Fill in the blanks
+        $PmtInfIdNode->nodeValue        = $this->makeId();
+        $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
+        $BtchBookgNode->nodeValue       = "true";
+        $CtrlSumNode->nodeValue         = "0";
+        $Cd_SvcLvl_Node->nodeValue      = "SEPA";
+        $Cd_LclInstrm_Node->nodeValue   = "CORE";
+        $SeqTpNode->nodeValue           = $type; //Define a check for: FRST RCUR OOFF FNAL
+        $ReqdColltnDtNode->nodeValue    = $date; 
+        $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
+        $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
+        $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+        $ChrgBrNode->nodeValue          = "SLEV";
+        $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
+        $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
+        $PrtryNode->nodeValue           = "SEPA";
+        
+        //Fold the batch information
+        $PmtInfNode->appendChild($PmtInfIdNode);
+        $PmtInfNode->appendChild($PmtMtdNode);
+        $PmtInfNode->appendChild($BtchBookgNode);
+        $PmtInfNode->appendChild($NbOfTxsNode);
+        $PmtInfNode->appendChild($CtrlSumNode);
+        
+                $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
+            $PmtTpInfNode->appendChild($SvcLvlNode);
+                $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
+            $PmtTpInfNode->appendChild($LclInstrmNode);
+            $PmtTpInfNode->appendChild($SeqTpNode);
+        $PmtInfNode->appendChild($PmtTpInfNode);
+        $PmtInfNode->appendChild($ReqdColltnDtNode);
+        
+            $CdtrNode->appendChild($Nm_Cdtr_Node);
+        $PmtInfNode->appendChild($CdtrNode);
+        
+                $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
+            $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
+        $PmtInfNode->appendChild($CdtrAcctNode);
+        
+                $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+        $PmtInfNode->appendChild($CdtrAgtNode);
+        
+        $PmtInfNode->appendChild($ChrgBrNode);
+        
+            $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
+                        $OthrNode->appendChild($Id_Othr_Node);
+                            $SchmeNmNode->appendChild($PrtryNode);
+                        $OthrNode->appendChild($SchmeNmNode);
+                    $PrvtIdNode->appendChild($OthrNode);
+                $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
+            $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
+        $PmtInfNode->appendChild($CdtrSchmeIdNode);
+        
+        //Add it to the batchArray.       
+        $this->batchArray[$type."::".$date]['node'] = $PmtInfNode;
+        $this->batchArray[$type."::".$date]['ctrlSum'] = $CtrlSumNode;
+        $this->batchArray[$type."::".$date]['nbOfTxs'] = $NbOfTxsNode;
+        
+        //Return the batch array for this type and date.
+        return $this->batchArray[$type."::".$date];
+    }//getBatch
 }
 ?>
