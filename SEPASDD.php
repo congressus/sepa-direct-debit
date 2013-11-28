@@ -312,7 +312,7 @@ class SEPASDD {
      */
     public function validate($xml){
         $domdoc = new DOMDocument();
-        $domdoc->loadXML($result);
+        $domdoc->loadXML($xml);
         return $domdoc->schemaValidate("pain.008.001.02.xsd");
     }//validate
         
@@ -406,7 +406,7 @@ class SEPASDD {
         
         foreach ( $functions as $target => $function ){
             //Check if it is even there in the config
-            if ( array_key_exists($function,$config) ) {
+            if ( array_key_exists($target,$config) ) {
                 //Perform the RegEx
                 $function_result = call_user_func($function,$config[$target]);
                 if ( $function_result ){
@@ -458,7 +458,7 @@ class SEPASDD {
         
         foreach ( $functions as $target => $function ){
             //Check if it is even there in the config
-            if ( array_key_exists($function,$payment) ) {
+            if ( array_key_exists($target,$payment) ) {
                 //Perform the RegEx
                 $function_result = call_user_func($function,$payment[$target]);
                 if ( $function_result ){
