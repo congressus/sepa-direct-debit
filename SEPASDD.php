@@ -408,7 +408,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$config) ) {
                 //Perform the RegEx
-                $function_result = call_user_func($function,$config[$target]);
+                $function_result = call_user_func("SEPASDD::".$function,$config[$target]);
                 if ( $function_result ){
                     continue;
                 }else{
@@ -460,7 +460,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$payment) ) {
                 //Perform the RegEx
-                $function_result = call_user_func($function,$payment[$target]);
+                $function_result = call_user_func("SEPASDD::".$function,$payment[$target]);
                 if ( $function_result ){
                     continue;
                 }else{
@@ -478,7 +478,7 @@ class SEPASDD {
      * @param $IBAN the IBAN number to check.
      * @return BOOLEAN TRUE if valid, FALSE if invalid.
      */
-    private function validateIBAN($IBAN){
+    public static function validateIBAN($IBAN){
         $result = preg_match("/[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}/",$IBAN);
         if ( $result > 0 && $result !== false){
             return true;
@@ -492,7 +492,7 @@ class SEPASDD {
      * @param $BIC the BIC number to check.
      * @return TRUE if valid, FALSE if invalid.
      */
-    private function validateBIC($BIC){
+    public static function validateBIC($BIC){
         $result = preg_match("([a-zA-Z]{4}[a-zA-Z]{2}[a-zA-Z0-9]{2}([a-zA-Z0-9]{3})?)",$BIC);
         if ( $result > 0 && $result !== false){
             return true;
@@ -506,7 +506,7 @@ class SEPASDD {
      * @param $date The date to validate.
      * @return True if valid, error string if invalid.
      */
-    private function validateDate($date){
+    public static function validateDate($date){
         $result = DateTime::createFromFormat("Y-m-d",$date);
         if($result === false){
             return false;
@@ -520,7 +520,7 @@ class SEPASDD {
      * @param Typecode
      * @return True if valid, error string if invalid.
      */
-    private function validateDDType($type){
+    public static function validateDDType($type){
         $types = array("FRST",
                        "RCUR",
                        "FNAL",
@@ -537,7 +537,7 @@ class SEPASDD {
      * @param $amount The amount to validate.
      * @return TRUE if valid, FALSE if invalid.
      */
-    private function validateAmount($amount){
+    public static function validateAmount($amount){
         return ctype_digit($amount);
     }//validateAmount
     
