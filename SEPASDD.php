@@ -127,7 +127,7 @@ class SEPASDD {
         $CstmrDrctDbtInitnNode  = $this->getCstmrDrctDbtInitnNode();
         
         //If there is a batch, the batch will create this information.
-        if($this->config['batch'] == 'false'){
+        if($this->config['batch'] == false){
             $PmtInfNode             = $this->xml->createElement("PmtInf");
             $PmtInfIdNode           = $this->xml->createElement("PmtInfId");
             $PmtMtdNode             = $this->xml->createElement("PmtMtd");
@@ -161,7 +161,7 @@ class SEPASDD {
             
             $PmtInfIdNode->nodeValue        = $this->makeId();
             $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
-            $BtchBookgNode->nodeValue       = $this->config['batch'];
+            $BtchBookgNode->nodeValue       = "false";
             $NbOfTxsNode->nodeValue         = "1";
             $CtrlSumNode->nodeValue         = $this->intToDecimal($payment['amount']);
             $Cd_SvcLvl_Node->nodeValue      = "SEPA";
@@ -214,13 +214,13 @@ class SEPASDD {
         $EndToEndIdNode->nodeValue      = $this->makeId();
         
         //Fold the nodes, if batch is enabled, some of this will be done by the batch.
-        if($batch === false){
+        if($this->config['batch'] == false){
             $PmtInfNode->appendChild($PmtInfIdNode);
             $PmtInfNode->appendChild($PmtMtdNode);
             $PmtInfNode->appendChild($BtchBookgNode);
             $PmtInfNode->appendChild($NbOfTxsNode);
             $PmtInfNode->appendChild($CtrlSumNode);
-            
+   
                     $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
                 $PmtTpInfNode->appendChild($SvcLvlNode);
                     $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
@@ -280,7 +280,7 @@ class SEPASDD {
                        $PmtIdNode->appendChild($EndToEndIdNode);
 
         
-        if($batch === false){
+        if($this->config['batch'] == false){
             
             //Add to the document
             $PmtInfNode->appendChild($DrctDbtTxInfNode);
