@@ -24,7 +24,7 @@ The following parameters are required:
 - IBAN: 	    The creditor's International Bank Account Number.
 - BIC:		    The creditor's Bank Identification Code.
 - batch:	    Whether to process as batch or as individual transactions .
-		        Allowed: "true" or "false".
+		        Allowed: true or false (MUST be boolean).
 - creditor_id:	The creditor's id, contact your bank if you do not know this.
 - currency:	    The currency in which the amounts are defined. 
 		    Allowed: ISO 4217.
@@ -41,7 +41,7 @@ grouped in a batch.
 $config = array("name" => "Test",
                 "IBAN" => "NL50BANK1234567890",
                 "BIC" => "BANKNL2A",
-                "batch" => "true",
+                "batch" => true,
                 "creditor_id" => "00000",
                 "currency" => "EUR"
                 );
