@@ -146,9 +146,11 @@ class SEPASDD {
             $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
             $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
             $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
-            $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-            $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
-            $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+            if ( isset( $this->config['BIC'] ) ) {
+            	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+            	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+            	$BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+            }
             $ChrgBrNode             = $this->xml->createElement("ChrgBr");
             $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
             $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
@@ -170,7 +172,9 @@ class SEPASDD {
             $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
             $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
             $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
-            $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+            if ( isset( $this->config['BIC'] ) ) {
+            	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+            }
             $ChrgBrNode->nodeValue          = "SLEV";
             $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
             $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
@@ -190,9 +194,11 @@ class SEPASDD {
         $MndtRltdInfNode        = $this->xml->createElement("MndtRltdInf");
         $MndtIdNode             = $this->xml->createElement("MndtId");
         $DtOfSgntrNode          = $this->xml->createElement("DtOfSgntr");
-        $DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
-        $FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
-        $BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
+        if ( isset( $payment['BIC'] ) ) {
+        	$DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
+        	$FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
+        	$BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
+        }
         $DbtrNode               = $this->xml->createElement("Dbtr");
         $Nm_Dbtr_Node           = $this->xml->createElement("Nm");
         $DbtrAcctNode           = $this->xml->createElement("DbtrAcct");
@@ -263,10 +269,11 @@ class SEPASDD {
                 $DrctDbtTxNode->appendChild($MndtRltdInfNode);
             $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
             
-                    $FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
-                $DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
-            $DrctDbtTxInfNode->appendChild($DbtrAgtNode);
-            
+            if ( isset( $payment['BIC'] ) ) {
+                    	$FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
+                	$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
+            	$DrctDbtTxInfNode->appendChild($DbtrAgtNode);
+            }
                 $DbtrNode->appendChild($Nm_Dbtr_Node);
             $DrctDbtTxInfNode->appendChild($DbtrNode);
             
@@ -384,7 +391,6 @@ class SEPASDD {
     private function validateConfig($config){
         $required = array("name",
                           "IBAN",
-                          "BIC",
                           "batch",
                           "creditor_id",
                           "currency");
@@ -429,7 +435,6 @@ class SEPASDD {
     private function validatePayment($payment){
         $required = array("name",
                           "IBAN",
-                          "BIC",
                           "amount",
                           "type",
                           "collection_date",
@@ -549,6 +554,12 @@ class SEPASDD {
     private function intToDecimal($int){
         $before = substr($int, 0, -2);
         $after = substr($int, -2);
+        if( empty($before) ){
+        	$before = 0;
+        }
+        if( strlen($after) == 1 ){
+        	$after = "0".$after;
+        }
         return $before.".".$after;
     }//intToDecimal
     
@@ -586,7 +597,7 @@ class SEPASDD {
         $random = md5($random);
         $random = substr($random,0,12);
         $timestamp = date("dmYsi");
-        return $timestamp."_".$random;
+        return $timestamp."-".$random;
     }//makeMsgId
     
     /**
@@ -602,7 +613,7 @@ class SEPASDD {
         if($length > 22){
             $name = substr($name,0,22);
         }
-        return $name."_".$random;
+        return $name."-".$random;
     }//makeId
     
     /**
@@ -652,9 +663,11 @@ class SEPASDD {
         $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
         $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
         $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
-        $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-        $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
-        $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+        if ( isset( $this->config['BIC'] ) ) {
+        	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+        	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+        	$BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+        }
         $ChrgBrNode             = $this->xml->createElement("ChrgBr");
         $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
         $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
@@ -676,7 +689,9 @@ class SEPASDD {
         $ReqdColltnDtNode->nodeValue    = $date; 
         $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
         $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
-        $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+        if ( isset( $this->config['BIC'] ) ) {
+        	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+        }
         $ChrgBrNode->nodeValue          = "SLEV";
         $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
         $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
@@ -704,10 +719,11 @@ class SEPASDD {
             $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
         $PmtInfNode->appendChild($CdtrAcctNode);
         
-                $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
-            $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-        $PmtInfNode->appendChild($CdtrAgtNode);
-        
+        if ( isset( $this->config['BIC'] ) ) {
+                	$FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            	$CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+        	$PmtInfNode->appendChild($CdtrAgtNode);
+        }
         $PmtInfNode->appendChild($ChrgBrNode);
         
             $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
