@@ -213,7 +213,9 @@ class SEPASDD {
         
         $MndtIdNode->nodeValue          = $payment['mandate_id'];
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
-        $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
+        if ( isset( $payment['BIC'] ) ) {
+            $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
+        }
         $Nm_Dbtr_Node->nodeValue        = htmlentities($payment['name'], ENT_QUOTES);
         $IBAN_DbtrAcct_Node->nodeValue  = $payment['IBAN'];
         $UstrdNode->nodeValue           = htmlentities($payment['description'], ENT_QUOTES);
@@ -242,9 +244,11 @@ class SEPASDD {
                 $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
             $PmtInfNode->appendChild($CdtrAcctNode);
             
-                    $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            if ( isset( $payment['BIC'] ) ) {
+                $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
                 $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-            $PmtInfNode->appendChild($CdtrAgtNode);
+                $PmtInfNode->appendChild($CdtrAgtNode);
+            }
             
             $PmtInfNode->appendChild($ChrgBrNode);
             
@@ -270,9 +274,9 @@ class SEPASDD {
             $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
             
             if ( isset( $payment['BIC'] ) ) {
-                    	$FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
-                	$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
-            	$DrctDbtTxInfNode->appendChild($DbtrAgtNode);
+              $FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
+              $DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
+              $DrctDbtTxInfNode->appendChild($DbtrAgtNode);
             }
                 $DbtrNode->appendChild($Nm_Dbtr_Node);
             $DrctDbtTxInfNode->appendChild($DbtrNode);
