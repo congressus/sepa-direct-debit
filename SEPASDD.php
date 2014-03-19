@@ -96,7 +96,7 @@ class SEPASDD {
         //Set the values for the nodes
         $MsgIdNode->nodeValue = $this->makeMsgId();
         $CreDtTmNode->nodeValue = date("c");
-        $NmNode->nodeValue = htmlentities($this->config['name'],ENT_QUOTES);
+        $NmNode->nodeValue = htmlentities($this->config['name'],ENT_XML1, 'UTF-8' );
         
         //Append the nodes
         $InitgPtyNode->appendChild($NmNode);
@@ -170,13 +170,13 @@ class SEPASDD {
             $Cd_LclInstrm_Node->nodeValue   = "CORE";
             $SeqTpNode->nodeValue           = $payment['type']; //Define a check for: FRST RCUR OOFF FNAL
             $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
-            $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
+            $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
             $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
             if ( isset( $this->config['BIC'] ) ) {
             	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
             }
             $ChrgBrNode->nodeValue          = "SLEV";
-            $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
+            $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
             $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
             $PrtryNode->nodeValue           = "SEPA";
             
@@ -214,9 +214,9 @@ class SEPASDD {
         $MndtIdNode->nodeValue          = $payment['mandate_id'];
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
         $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
-        $Nm_Dbtr_Node->nodeValue        = htmlentities($payment['name'], ENT_QUOTES);
+        $Nm_Dbtr_Node->nodeValue        = htmlentities($payment['name'], ENT_XML1, 'UTF-8' );
         $IBAN_DbtrAcct_Node->nodeValue  = $payment['IBAN'];
-        $UstrdNode->nodeValue           = htmlentities($payment['description'], ENT_QUOTES);
+        $UstrdNode->nodeValue           = htmlentities($payment['description'], ENT_XML1, 'UTF-8' );
         $EndToEndIdNode->nodeValue      = $this->makeId();
         
         //Fold the nodes, if batch is enabled, some of this will be done by the batch.
@@ -414,7 +414,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$config) ) {
                 //Perform the RegEx
-                $function_result = call_user_func("SEPASDD::".$function,$config[$target]);
+                $function_result = call_user_func("SELF::".$function,$config[$target]);
                 if ( $function_result ){
                     continue;
                 }else{
@@ -465,7 +465,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$payment) ) {
                 //Perform the RegEx
-                $function_result = call_user_func("SEPASDD::".$function,$payment[$target]);
+                $function_result = call_user_func("SELF::".$function,$payment[$target]);
                 if ( $function_result ){
                     continue;
                 }else{
@@ -687,13 +687,13 @@ class SEPASDD {
         $Cd_LclInstrm_Node->nodeValue   = "CORE";
         $SeqTpNode->nodeValue           = $type; //Define a check for: FRST RCUR OOFF FNAL
         $ReqdColltnDtNode->nodeValue    = $date; 
-        $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_QUOTES);
+        $Nm_Cdtr_Node->nodeValue        = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
         $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
         if ( isset( $this->config['BIC'] ) ) {
         	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
         }
         $ChrgBrNode->nodeValue          = "SLEV";
-        $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES);
+        $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
         $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
         $PrtryNode->nodeValue           = "SEPA";
         
@@ -744,4 +744,3 @@ class SEPASDD {
         return $this->batchArray[$type."::".$date];
     }//getBatch
 }
-?>
