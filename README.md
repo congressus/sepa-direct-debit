@@ -22,12 +22,14 @@ The following parameters are required:
 
 - name:		    The name of the creditor('s organization).
 - IBAN: 	    The creditor's International Bank Account Number.
-- BIC:		    The creditor's Bank Identification Code.
+- BIC:		    The creditor's Bank Identification Code. (optional)
 - batch:	    Whether to process as batch or as individual transactions .
 		        Allowed: true or false (MUST be boolean).
 - creditor_id:	The creditor's id, contact your bank if you do not know this.
 - currency:	    The currency in which the amounts are defined. 
 		    Allowed: ISO 4217.
+- version:	    The PAIN.008.001 version. (optional)
+	            Allowed: 3
 
 #####Note:
 When setting batch to true, SEPASDD will create a batch for each Direct Debit
@@ -68,7 +70,7 @@ The following parameters are required:
 
 - name:			    The debtors name.
 - IBAN: 		    The debtor's International Bank Account Number.
-- BIC:			    The debtor's Bank Identification Code.
+- BIC:			    The debtor's Bank Identification Code. (optional)
 - amount:		    The amount to transfer from debtor to creditor (IN CENTS).
 			        Allowed: integers (NO SEPARATORS) e.g. EUR 10.00 has to be entered as 1000
 - type:			    The type of Direct Debit Transaction
@@ -164,6 +166,10 @@ Will create
 
 To validate against the pain.008.001.02 schema definition, you can
 use the validate() method. This requires the XML as string as argument.
+
+#####Note: 
+Some banks allow not specifying a BIC, and so does SEPASDD. However it is not
+schema compliant and the schema WILL NOT validate.
 
 ####Example
 
