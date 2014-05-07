@@ -595,7 +595,7 @@ class SEPASDD {
      * @return TRUE if valid, FALSE if invalid.
      */
     public static function validateAmount($amount){
-        return ctype_digit($amount);
+        return ctype_digit(strval($amount));
     }//validateAmount
     
     /**

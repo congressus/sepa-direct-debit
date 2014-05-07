@@ -72,7 +72,7 @@ The following parameters are required:
 - IBAN: 		    The debtor's International Bank Account Number.
 - BIC:			    The debtor's Bank Identification Code. (optional)
 - amount:		    The amount to transfer from debtor to creditor (IN CENTS).
-			        Allowed: integers (NO SEPARATORS) e.g. EUR 10.00 has to be entered as 1000
+			        Allowed: int/string (NO SEPARATORS) e.g. EUR 10.00 has to be entered as 1000 or "1000"
 - type:			    The type of Direct Debit Transaction
 			        Allowed: FRST (First), RCUR (Recurring), OOFF (One Off), FNAL (Final)
 - collection_date:  The date at which the amount should be collected from the debtor.
