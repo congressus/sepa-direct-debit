@@ -71,7 +71,7 @@ class SEPASDD {
         
         //set the namespace url
         $documentAttributeXMLNSXSI = $this->xml->createAttribute("xmlns:xsi");
-        $documentAttributeXMLNSXSI->value = "http://www.w3.org/2001/XMLSchema-intance";
+        $documentAttributeXMLNSXSI->value = "http://www.w3.org/2001/XMLSchema-instance";
         $documentNode->appendChild($documentAttributeXMLNSXSI);
         
         //create the Direct Debit node
