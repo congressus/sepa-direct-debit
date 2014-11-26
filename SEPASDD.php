@@ -630,7 +630,6 @@ class SEPASDD {
             $control .= $char;
         }
 
-        Log::write('sepa', '', [$str, $control, bcmod($control, 97), str_pad(98 - bcmod($control, 97), 2, '0', STR_PAD_LEFT)]);
         $control = str_pad(98 - bcmod($control, 97), 2, '0', STR_PAD_LEFT);
         return $countryCode . $control . $suffix . $creditorID;
     }//buildCreditorID
