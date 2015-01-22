@@ -454,9 +454,9 @@ class SEPASDD {
             if ( array_key_exists($requirement,$config) ) {
                 //It exists, check if not empty
                 if($requirement == 'batch' && !isset($config[$requirement])) {
-                    $missing[] = $requirement . " is empty.";
+                    return = $requirement . " is empty.";
                 } else if (empty($config[$requirement]) && $requirement != 'batch') {
-                    $missing[] = $requirement . " is empty.";
+                    return = $requirement . " is empty.";
                 }
             }else{
                 return $requirement." does not exist.";
