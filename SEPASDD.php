@@ -497,7 +497,7 @@ class SEPASDD {
                            "BIC" => "validateBIC",
                            "amount" => "validateAmount",
                            "collection_date" => "validateDate",
-                           "mandate_date" => "validateDate",
+                           "mandate_date" => "validateMandateDate",
                            "type" => "validateDDType");
         
         foreach ( $required as $requirement ) {
@@ -518,7 +518,7 @@ class SEPASDD {
             if ( array_key_exists($target,$payment) ) {
                 //Perform the RegEx
                 $function_result = call_user_func("SELF::".$function,$payment[$target]);
-                if ( $function_result ){
+                if ( $function_result === true ){
                     continue;
                 }else{
                     return $target." does not validate.";
@@ -565,12 +565,35 @@ class SEPASDD {
      */
     public static function validateDate($date){
         $result = DateTime::createFromFormat("Y-m-d",$date);
+		
         if($result === false){
-            return false;
-        }else{
             return $date." is not a valid ISO Date";
         }
+        
+		return true;
     }//checkDate
+    
+    /**
+     * Function to validate a ISO date.
+     * @param $date The date to validate.
+     * @return True if valid, error string if invalid.
+     */
+    public static function validateMandateDate($date){
+    	$result = DateTime::createFromFormat("Y-m-d",$date);
+		
+        if($result === false){
+            return $date." is not a valid ISO Date";
+        }
+        
+        $timeStamp = $result->getTimestamp();
+		$beginOfToday = strtotime(date("Y-m-d") . " 00:00");
+		
+		if ($timeStamp > $beginOfToday) {
+			return "mandate_date " . $date . " must be at least 1 day later then current day " . date("Y-m-d");
+		}
+        
+		return true;
+    }//checkMandateDate
     
     /**
      * Function to validate the Direct Debit Transaction types
@@ -811,4 +834,8 @@ class SEPASDD {
         //Return the batch array for this type and date.
         return $this->batchArray[$type."::".$date];
     }//getBatch
+    
+    public function isEmpty() {
+        return empty($this->batchArray);
+    }
 }
