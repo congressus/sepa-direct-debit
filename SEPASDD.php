@@ -30,11 +30,11 @@
  * This class creates a Sepa Direct Debit XML File.
  */
 class SEPASDD {
-    
+
     private $config;
     private $XML;
     private $batchArray = array();
-    
+
     function __construct($config){
         //Check the config
         $config_validator = $this->validateConfig($config);
@@ -43,23 +43,23 @@ class SEPASDD {
         }else{
             throw new Exception("Invalid config file: ".$config_validator);
         }
-        
+
 
         //Prepare the document
         $this->prepareDocument();
         $this->createGroupHeader();
     }//__construct
-    
+
     /**
      * Build the main document node and set xml namespaces.
      */
     private function prepareDocument(){
         //Create the XML Instance
         $this->xml = new DOMDocument("1.0","UTF-8");
-        
+
         //Create the document node
         $documentNode = $this->xml->createElement("Document");
-        
+
         //set the namespace
         $documentAttributeXMLNS = $this->xml->createAttribute("xmlns");
         if ( isset($this->config['version']) && $this->config['version'] == "3") {
@@ -68,27 +68,27 @@ class SEPASDD {
             $documentAttributeXMLNS->value = "urn:iso:std:iso:20022:tech:xsd:pain.008.001.02";
         }
         $documentNode->appendChild($documentAttributeXMLNS);
-        
+
         //set the namespace url
         $documentAttributeXMLNSXSI = $this->xml->createAttribute("xmlns:xsi");
         $documentAttributeXMLNSXSI->value = "http://www.w3.org/2001/XMLSchema-instance";
         $documentNode->appendChild($documentAttributeXMLNSXSI);
-        
+
         //create the Direct Debit node
         $CstmrDrctDbtInitnNode = $this->xml->createElement("CstmrDrctDbtInitn");
         $documentNode->appendChild($CstmrDrctDbtInitnNode);
-        
+
         //append the document node to the XML Instance
         $this->xml->appendChild($documentNode);
     }//prepareDocument
-    
+
     /**
      * Function to create the GroupHeader (GrpHdr) in the CstmrDrctDbtInit Node
      */
     private function createGroupHeader(){
         //Retrieve the CstmrDrctDbtInitn node
         $CstmrDrctDbtInitnNode = $this->getCstmrDrctDbtInitnNode();
-        
+
         //Create the required nodes
         $GrpHdrNode     = $this->xml->createElement("GrpHdr");
         $MsgIdNode      = $this->xml->createElement("MsgId");
@@ -97,33 +97,43 @@ class SEPASDD {
         $CtrlSumNode    = $this->xml->createElement("CtrlSum");
         $InitgPtyNode   = $this->xml->createElement("InitgPty");
         $NmNode         = $this->xml->createElement("Nm");
-        
+        $IdNode         = $this->xml->createElement("Id");
+        $OrgIdNode      = $this->xml->createElement("OrgId");
+        $OthrNode       = $this->xml->createElement("Othr");
+        $OthrIdNode     = $this->xml->createElement("Id");
+
+
         //Set the values for the nodes
         $MsgIdNode->nodeValue = $this->makeMsgId();
         $CreDtTmNode->nodeValue = date("c");
+        $OthrIdNode->nodeValue = $this->config['creditor_id'];
 
-       //If using lower than PHP 5.4.0, there is no ENT_XML1
+        //If using lower than PHP 5.4.0, there is no ENT_XML1
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $NmNode->nodeValue = htmlentities($this->config['name'],ENT_XML1, 'UTF-8' );
         }else{
             $NmNode->nodeValue = htmlentities($this->config['name'],ENT_QUOTES, 'UTF-8' );
         }
-        
 
-        
+
+
         //Append the nodes
         $InitgPtyNode->appendChild($NmNode);
+        $InitgPtyNode->appendChild($IdNode);
+        $IdNode->appendChild($OrgIdNode);
+        $OrgIdNode->appendChild($OthrNode);
+        $OthrNode->appendChild($OthrIdNode);
         $GrpHdrNode->appendChild($MsgIdNode);
         $GrpHdrNode->appendChild($CreDtTmNode);
         $GrpHdrNode->appendChild($NbOfTxsNode);
         $GrpHdrNode->appendChild($CtrlSumNode);
         $GrpHdrNode->appendChild($InitgPtyNode);
-        
+
         //Append the header to its parent
         $CstmrDrctDbtInitnNode->appendChild($GrpHdrNode);
-        
+
     }//createGroupHeader
-    
+
     /**
      * Public function to add payments
      * @param the payment to be added in the form of an array
@@ -135,10 +145,10 @@ class SEPASDD {
         if($validationResult !== true){
             throw new Exception("Invalid Payment, error with: ".$validationResult);
         }
-        
+
         //Get the CstmrDrctDbtInitnNode 
         $CstmrDrctDbtInitnNode  = $this->getCstmrDrctDbtInitnNode();
-        
+
         //If there is a batch, the batch will create this information.
         if($this->config['batch'] == false){
             $PmtInfNode             = $this->xml->createElement("PmtInf");
@@ -160,13 +170,13 @@ class SEPASDD {
             $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
             $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
             if ( isset( $this->config['BIC'] ) ) {
-            	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-            	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
-            	if ( isset($this->config['version']) && $this->config['version'] == "3") {
-            	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
-            	}else{
-            	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
-            	}
+                $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+                $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+                if ( isset($this->config['version']) && $this->config['version'] == "3") {
+                    $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
+                }else{
+                    $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+                }
             }
             $ChrgBrNode             = $this->xml->createElement("ChrgBr");
             $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
@@ -177,7 +187,7 @@ class SEPASDD {
             $Id_Othr_Node           = $this->xml->createElement("Id");
             $SchmeNmNode            = $this->xml->createElement("SchmeNm");
             $PrtryNode              = $this->xml->createElement("Prtry");
-            
+
             $PmtInfIdNode->nodeValue        = $this->makeId();
             $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
             $BtchBookgNode->nodeValue       = "false";
@@ -186,7 +196,7 @@ class SEPASDD {
             $Cd_SvcLvl_Node->nodeValue      = "SEPA";
             $Cd_LclInstrm_Node->nodeValue   = "CORE";
             $SeqTpNode->nodeValue           = $payment['type']; //Define a check for: FRST RCUR OOFF FNAL
-            $ReqdColltnDtNode->nodeValue    = $payment['collection_date']; 
+            $ReqdColltnDtNode->nodeValue    = $payment['collection_date'];
 
             if( version_compare(PHP_VERSION, '5.4.0') >= 0){
                 $Nm_Cdtr_Node->nodeValue    = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
@@ -196,7 +206,7 @@ class SEPASDD {
 
             $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
             if ( isset( $this->config['BIC'] ) ) {
-            	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+                $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
             }
             $ChrgBrNode->nodeValue          = "SLEV";
 
@@ -208,12 +218,12 @@ class SEPASDD {
 
             $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
             $PrtryNode->nodeValue           = "SEPA";
-            
+
         }else{
             //Get the batch node for this kind of payment to add the DrctDbtTxInf node.
             $batch = $this->getBatch($payment['type'],$payment['collection_date']);
         }
-        
+
         //Create the payment node.
         $DrctDbtTxInfNode       = $this->xml->createElement("DrctDbtTxInf");
         $PmtIdNode              = $this->xml->createElement("PmtId");
@@ -224,13 +234,13 @@ class SEPASDD {
         $MndtIdNode             = $this->xml->createElement("MndtId");
         $DtOfSgntrNode          = $this->xml->createElement("DtOfSgntr");
         if ( isset( $payment['BIC'] ) ) {
-        	$DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
-        	$FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
-        	if ( isset($this->config['version']) && $this->config['version'] == "3") {
-        	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BICFI");        	
-        	}else{
-        	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
-        	}
+            $DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
+            $FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
+            if ( isset($this->config['version']) && $this->config['version'] == "3") {
+                $BIC_DbtrAgt_Node       = $this->xml->createElement("BICFI");
+            }else{
+                $BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
+            }
         }
         $DbtrNode               = $this->xml->createElement("Dbtr");
         $Nm_Dbtr_Node           = $this->xml->createElement("Nm");
@@ -243,30 +253,30 @@ class SEPASDD {
         //Set the payment node information
         $InstdAmtNode->setAttribute("Ccy",$this->config['currency']);
         $InstdAmtNode->nodeValue        = $this->intToDecimal($payment['amount']);
-        
+
         $MndtIdNode->nodeValue          = $payment['mandate_id'];
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
 
         if ( isset( $payment['BIC'] ) ) {
             $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
         }
-        
+
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $Nm_Dbtr_Node->nodeValue    = htmlentities($payment['name'], ENT_XML1, 'UTF-8' );
         }else{
-            $Nm_Dbtr_Node->nodeValue    = htmlentities($payment['name'], ENT_QUOTES, 'UTF-8' );        
+            $Nm_Dbtr_Node->nodeValue    = htmlentities($payment['name'], ENT_QUOTES, 'UTF-8' );
         }
-        
+
         $IBAN_DbtrAcct_Node->nodeValue  = $payment['IBAN'];
 
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $UstrdNode->nodeValue       = htmlentities($payment['description'], ENT_XML1, 'UTF-8' );
         }else{
-            $UstrdNode->nodeValue       = htmlentities($payment['description'], ENT_QUOTES, 'UTF-8' );     
+            $UstrdNode->nodeValue       = htmlentities($payment['description'], ENT_QUOTES, 'UTF-8' );
         }
 
         $EndToEndIdNode->nodeValue      = $this->makeId();
-        
+
         //Fold the nodes, if batch is enabled, some of this will be done by the batch.
         if($this->config['batch'] == false){
             $PmtInfNode->appendChild($PmtInfIdNode);
@@ -274,69 +284,69 @@ class SEPASDD {
             $PmtInfNode->appendChild($BtchBookgNode);
             $PmtInfNode->appendChild($NbOfTxsNode);
             $PmtInfNode->appendChild($CtrlSumNode);
-   
-                    $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
-                $PmtTpInfNode->appendChild($SvcLvlNode);
-                    $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
-                $PmtTpInfNode->appendChild($LclInstrmNode);
-                $PmtTpInfNode->appendChild($SeqTpNode);
+
+            $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
+            $PmtTpInfNode->appendChild($SvcLvlNode);
+            $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
+            $PmtTpInfNode->appendChild($LclInstrmNode);
+            $PmtTpInfNode->appendChild($SeqTpNode);
             $PmtInfNode->appendChild($PmtTpInfNode);
             $PmtInfNode->appendChild($ReqdColltnDtNode);
-            
-                $CdtrNode->appendChild($Nm_Cdtr_Node);
-            $PmtInfNode->appendChild($CdtrNode);
-            
-                    $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
-                $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
-            $PmtInfNode->appendChild($CdtrAcctNode);
-            
-                    $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
-                $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-            $PmtInfNode->appendChild($CdtrAgtNode);
-            
-            $PmtInfNode->appendChild($ChrgBrNode);
-            
-                $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
-                            $OthrNode->appendChild($Id_Othr_Node);
-                                $SchmeNmNode->appendChild($PrtryNode);
-                            $OthrNode->appendChild($SchmeNmNode);
-                        $PrvtIdNode->appendChild($OthrNode);
-                    $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
-                $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
-            $PmtInfNode->appendChild($CdtrSchmeIdNode);
-            
-                    
-        }
-                $PmtIdNode->appendChild($EndToEndIdNode);    
-        
-            $DrctDbtTxInfNode->appendChild($PmtIdNode);     
-            $DrctDbtTxInfNode->appendChild($InstdAmtNode);
-            
-                    $MndtRltdInfNode->appendChild($MndtIdNode);
-                    $MndtRltdInfNode->appendChild($DtOfSgntrNode);
-                $DrctDbtTxNode->appendChild($MndtRltdInfNode);
-            $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
-            
-            if ( isset( $payment['BIC'] ) ) {
-                    	$FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
-                	$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
-            	$DrctDbtTxInfNode->appendChild($DbtrAgtNode);
-            }
-                $DbtrNode->appendChild($Nm_Dbtr_Node);
-            $DrctDbtTxInfNode->appendChild($DbtrNode);
-            
-                    $Id_DbtrAcct_Node->appendChild($IBAN_DbtrAcct_Node);
-                $DbtrAcctNode->appendChild($Id_DbtrAcct_Node); 
-            $DrctDbtTxInfNode->appendChild($DbtrAcctNode);
-                
-                $RmtInfNode->appendChild($UstrdNode);
-            $DrctDbtTxInfNode->appendChild($RmtInfNode);
-            
-                       $PmtIdNode->appendChild($EndToEndIdNode);
 
-        
+            $CdtrNode->appendChild($Nm_Cdtr_Node);
+            $PmtInfNode->appendChild($CdtrNode);
+
+            $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
+            $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
+            $PmtInfNode->appendChild($CdtrAcctNode);
+
+            $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+            $PmtInfNode->appendChild($CdtrAgtNode);
+
+            $PmtInfNode->appendChild($ChrgBrNode);
+
+            $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);
+            $OthrNode->appendChild($Id_Othr_Node);
+            $SchmeNmNode->appendChild($PrtryNode);
+            $OthrNode->appendChild($SchmeNmNode);
+            $PrvtIdNode->appendChild($OthrNode);
+            $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
+            $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
+            $PmtInfNode->appendChild($CdtrSchmeIdNode);
+
+
+        }
+        $PmtIdNode->appendChild($EndToEndIdNode);
+
+        $DrctDbtTxInfNode->appendChild($PmtIdNode);
+        $DrctDbtTxInfNode->appendChild($InstdAmtNode);
+
+        $MndtRltdInfNode->appendChild($MndtIdNode);
+        $MndtRltdInfNode->appendChild($DtOfSgntrNode);
+        $DrctDbtTxNode->appendChild($MndtRltdInfNode);
+        $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
+
+        if ( isset( $payment['BIC'] ) ) {
+            $FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
+            $DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
+            $DrctDbtTxInfNode->appendChild($DbtrAgtNode);
+        }
+        $DbtrNode->appendChild($Nm_Dbtr_Node);
+        $DrctDbtTxInfNode->appendChild($DbtrNode);
+
+        $Id_DbtrAcct_Node->appendChild($IBAN_DbtrAcct_Node);
+        $DbtrAcctNode->appendChild($Id_DbtrAcct_Node);
+        $DrctDbtTxInfNode->appendChild($DbtrAcctNode);
+
+        $RmtInfNode->appendChild($UstrdNode);
+        $DrctDbtTxInfNode->appendChild($RmtInfNode);
+
+        $PmtIdNode->appendChild($EndToEndIdNode);
+
+
         if($this->config['batch'] == false){
-            
+
             //Add to the document
             $PmtInfNode->appendChild($DrctDbtTxInfNode);
             $CstmrDrctDbtInitnNode->appendChild($PmtInfNode);
@@ -344,13 +354,13 @@ class SEPASDD {
             //Update the batch metrics
             $batch['ctrlSum']->nodeValue += $payment['amount'];
             $batch['nbOfTxs']->nodeValue++;
-            
+
             //Add to the batch
             $batch['node']->appendChild($DrctDbtTxInfNode);
         }
-        
+
     }//addPayment
-    
+
     /**
      * Function to finalize and save the document after all payments are added.
      * @return The XML to be echoed or saved to file.
@@ -360,7 +370,7 @@ class SEPASDD {
         $result = $this->xml->saveXML();
         return $result;
     }//save
-    
+
     /**
      * Function to validate xml against the pain.008.001.02 schema definition.
      * @param $xml The xml, as a string, to validate agianst the schema.
@@ -374,7 +384,7 @@ class SEPASDD {
             return $domdoc->schemaValidate("pain.008.001.02.xsd");
         }
     }//validate
-        
+
 
     /**
      * Function to add a custom node to the document.
@@ -400,7 +410,7 @@ class SEPASDD {
         }
         $parent->item(0)->appendChild($newnode);
     }//addCustomNode
-    
+
     /**
      * Function to finalize the document, completes the header with metadata, and processes batches.
      */
@@ -412,7 +422,7 @@ class SEPASDD {
                 $CstmrDrctDbtInitnNode->appendChild($batch['node']);
             }
         }
-        
+
 
         $trxCount = $this->xml->getElementsByTagName("DrctDbtTxInf");
         $trxCount = $trxCount->length;
@@ -427,12 +437,12 @@ class SEPASDD {
         $CtrlSum_XPATH = "//Document/CstmrDrctDbtInitn/GrpHdr/CtrlSum";
         $NbOfTxsNode = $xpath->query($NbOfTxs_XPATH)->item(0);
         $CtrlSumNode = $xpath->query($CtrlSum_XPATH)->item(0);
-        
+
         $NbOfTxsNode->nodeValue = $trxCount;
         $CtrlSumNode->nodeValue = $trxAmount;
-        
+
     }//finalize
-    
+
     /**
      * Check the config file for required fields and validity.
      * NOTE: A function entry in this field will NOT be evaluated if the field is not present in the
@@ -448,7 +458,7 @@ class SEPASDD {
                           "currency");
         $functions = array("IBAN" => "validateIBAN",
                            "BIC" => "validateBIC");
-        
+
         foreach ( $required as $requirement ) {
             //Check if the config has the required parameter
             if ( array_key_exists($requirement,$config) ) {
@@ -459,9 +469,9 @@ class SEPASDD {
             }else{
                 return $requirement." does not exist.";
             }
-            
+
         }
-        
+
         foreach ( $functions as $target => $function ){
             //Check if it is even there in the config
             if ( array_key_exists($target,$config) ) {
@@ -472,13 +482,13 @@ class SEPASDD {
                 }else{
                     return $target." does not validate.";
                 }
-            }  
-            
+            }
+
         }
-        
+
         return true;
     }//checkConfig
-    
+
     /**
      * Check a payment for validity
      * @param $payment The payment array
@@ -499,7 +509,7 @@ class SEPASDD {
                            "collection_date" => "validateDate",
                            "mandate_date" => "validateMandateDate",
                            "type" => "validateDDType");
-        
+
         foreach ( $required as $requirement ) {
             //Check if the config has the required parameter
             if ( array_key_exists($requirement,$payment) ) {
@@ -510,9 +520,9 @@ class SEPASDD {
             }else{
                 return $requirement." does not exist.";
             }
-            
+
         }
-        
+
         foreach ( $functions as $target => $function ){
             //Check if it is even there in the config
             if ( array_key_exists($target,$payment) ) {
@@ -523,13 +533,13 @@ class SEPASDD {
                 }else{
                     return $target." does not validate.";
                 }
-            }  
-            
+            }
+
         }
-        
+
         return true;
     }//validatePayment
-    
+
     /**
      * Validate an IBAN Number.
      * @param $IBAN the IBAN number to check.
@@ -543,9 +553,9 @@ class SEPASDD {
             return false;
         }
     }//validateIBAN
-     
+
     /**
-     * Validate a BIC number.Payment Information 
+     * Validate a BIC number.Payment Information
      * @param $BIC the BIC number to check.
      * @return TRUE if valid, FALSE if invalid.
      */
@@ -557,7 +567,7 @@ class SEPASDD {
             return false;
         }
     }//validateBIC
-    
+
     /**
      * Function to validate a ISO date.
      * @param $date The date to validate.
@@ -572,7 +582,7 @@ class SEPASDD {
         
 		return true;
     }//checkDate
-    
+
     /**
      * Function to validate a ISO date.
      * @param $date The date to validate.
@@ -611,7 +621,7 @@ class SEPASDD {
             return $type." is not a valid Sepa Direct Debit Transaction Type.";
         }
     }//validateDDType
-    
+
     /**
      * Function to validate an amount, to check that amount is in cents.
      * @param $amount The amount to validate.
@@ -620,7 +630,33 @@ class SEPASDD {
     public static function validateAmount($amount){
         return ctype_digit(strval($amount));
     }//validateAmount
-    
+
+    /**
+     * Build a creditor ID using the given data
+     * @see http://pelablog.onicesistemas.es/identificador-de-acreedor-en-mandatos-sepa/
+     * @return string
+     */
+    public static function buildCreditorID($countryCode, $creditorID, $suffix = '000')
+    {
+        $countryCode = strtoupper($countryCode);
+        $str = preg_replace('/\W/', '', $creditorID . $countryCode . '00');
+        $chars = array();
+        for ($i = 0, $c = mb_strlen($str); $i < $c; $i++) {
+            $chars[] = mb_substr($str, $i, 1);
+        }
+
+        $control = '';
+        foreach ($chars as $char) {
+            if (!ctype_digit($char)) {
+                $char = ord(strtoupper($char)) - ord('A') + 10;
+            }
+            $control .= $char;
+        }
+
+        $control = str_pad(98 - bcmod($control, 97), 2, '0', STR_PAD_LEFT);
+        return $countryCode . $control . $suffix . $creditorID;
+    }//buildCreditorID
+
     /**
      * Function to convert an amount in cents to a decimal (with point).
      * @param $int The amount as decimal string
@@ -630,14 +666,14 @@ class SEPASDD {
         $before = substr($int, 0, -2);
         $after = substr($int, -2);
         if( empty($before) ){
-        	$before = 0;
+            $before = 0;
         }
         if( strlen($after) == 1 ){
-        	$after = "0".$after;
+            $after = "0".$after;
         }
         return $before.".".$after;
     }//intToDecimal
-    
+
     /**
      * Function to convert an amount in decimal to cents (without point).
      * @param $decimal The amount as decimal
@@ -646,7 +682,7 @@ class SEPASDD {
     private function decimalToInt($decimal){
         return str_replace(".","",$decimal);
     }//decimalToInt
-    
+
     /**
      * Function to calculate the sum of the amounts, given as decimals in an array.
      * @param $array The array with decimals
@@ -662,7 +698,7 @@ class SEPASDD {
         $sum = $this->intToDecimal($sum);
         return $sum;
     }//calcTotalAmount
-    
+
     /**
      * Create a random Message Id f$PmtInfNodeor the header, prefixed with a timestamp.
      * @return the Message Id.
@@ -674,7 +710,7 @@ class SEPASDD {
         $timestamp = date("dmYsi");
         return $timestamp."-".$random;
     }//makeMsgId
-    
+
     /**
      * Create a random id, combined with the name (truncated at 22 chars).
      * @return the Id.
@@ -690,7 +726,7 @@ class SEPASDD {
         }
         return $name."-".$random;
     }//makeId
-    
+
     /**
      * Function to get the CstmrDrctDbtInitnNode from the current document.
      * @return The CstmrDrctDbtInitn DOMNode.
@@ -703,22 +739,22 @@ class SEPASDD {
         }
         return $CstmrDrctDbtInitnNodeList->item(0);
     }//getCstmrDrctDbtInitnNode
-    
+
     /**
      * Function to create a batch (PmtInf with BtchBookg set true) element.
      * @param $type The DirectDebit type for this batch.
      * @param $date The required collection date.
      */
     private function getBatch($type,$date){
-        
+
         //If the batch for this type and date already exists, return it.
-        if($this->validateDDType($type) && 
-           $this->validateDate($date) && 
+        if($this->validateDDType($type) &&
+           $this->validateDate($date) &&
            array_key_exists($type."::".$date,$this->batchArray)
-           ){
+        ){
             return $this->batchArray[$type."::".$date];
         }
-        
+
         //Create the PmtInf element and its subelements
         $PmtInfNode             = $this->xml->createElement("PmtInf");
         $PmtInfIdNode           = $this->xml->createElement("PmtInfId");
@@ -739,12 +775,12 @@ class SEPASDD {
         $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
         $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
         if ( isset( $this->config['BIC'] ) ) {
-        	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-        	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
-        	if ( isset($this->config['version']) && $this->config['version'] == "3") {
-        	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
-        	}else{
-        	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
+            $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+            $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+            if ( isset($this->config['version']) && $this->config['version'] == "3") {
+                $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
+            }else{
+                $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
             }
         }
         $ChrgBrNode             = $this->xml->createElement("ChrgBr");
@@ -756,7 +792,7 @@ class SEPASDD {
         $Id_Othr_Node           = $this->xml->createElement("Id");
         $SchmeNmNode            = $this->xml->createElement("SchmeNm");
         $PrtryNode              = $this->xml->createElement("Prtry");
-        
+
         //Fill in the blanks
         $PmtInfIdNode->nodeValue        = $this->makeId();
         $PmtMtdNode->nodeValue          = "DD"; //Direct Debit
@@ -765,72 +801,72 @@ class SEPASDD {
         $Cd_SvcLvl_Node->nodeValue      = "SEPA";
         $Cd_LclInstrm_Node->nodeValue   = "CORE";
         $SeqTpNode->nodeValue           = $type; //Define a check for: FRST RCUR OOFF FNAL
-        $ReqdColltnDtNode->nodeValue    = $date; 
+        $ReqdColltnDtNode->nodeValue    = $date;
 
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $Nm_Cdtr_Node->nodeValue    = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
         }else{
-            $Nm_Cdtr_Node->nodeValue    = htmlentities($this->config['name'], ENT_QUOTES, 'UTF-8' );   
+            $Nm_Cdtr_Node->nodeValue    = htmlentities($this->config['name'], ENT_QUOTES, 'UTF-8' );
         }
-        
+
         $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
         if ( isset( $this->config['BIC'] ) ) {
-        	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
+            $BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
         }
         $ChrgBrNode->nodeValue          = "SLEV";
 
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_XML1, 'UTF-8' );
         }else{
-            $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES, 'UTF-8' ); 
+            $Nm_CdtrSchmeId_Node->nodeValue = htmlentities($this->config['name'], ENT_QUOTES, 'UTF-8' );
         }
 
         $Id_Othr_Node->nodeValue        = $this->config['creditor_id'];
         $PrtryNode->nodeValue           = "SEPA";
-        
+
         //Fold the batch information
         $PmtInfNode->appendChild($PmtInfIdNode);
         $PmtInfNode->appendChild($PmtMtdNode);
         $PmtInfNode->appendChild($BtchBookgNode);
         $PmtInfNode->appendChild($NbOfTxsNode);
         $PmtInfNode->appendChild($CtrlSumNode);
-        
-                $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
-            $PmtTpInfNode->appendChild($SvcLvlNode);
-                $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
-            $PmtTpInfNode->appendChild($LclInstrmNode);
-            $PmtTpInfNode->appendChild($SeqTpNode);
+
+        $SvcLvlNode->appendChild($Cd_SvcLvl_Node);
+        $PmtTpInfNode->appendChild($SvcLvlNode);
+        $LclInstrmNode->appendChild($Cd_LclInstrm_Node);
+        $PmtTpInfNode->appendChild($LclInstrmNode);
+        $PmtTpInfNode->appendChild($SeqTpNode);
         $PmtInfNode->appendChild($PmtTpInfNode);
         $PmtInfNode->appendChild($ReqdColltnDtNode);
-        
-            $CdtrNode->appendChild($Nm_Cdtr_Node);
+
+        $CdtrNode->appendChild($Nm_Cdtr_Node);
         $PmtInfNode->appendChild($CdtrNode);
-        
-                $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
-            $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
+
+        $Id_CdtrAcct_Node->appendChild($IBAN_CdtrAcct_Node);
+        $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
         $PmtInfNode->appendChild($CdtrAcctNode);
-        
+
         if ( isset( $this->config['BIC'] ) ) {
-                	$FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
-            	$CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-        	$PmtInfNode->appendChild($CdtrAgtNode);
+            $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+            $PmtInfNode->appendChild($CdtrAgtNode);
         }
         $PmtInfNode->appendChild($ChrgBrNode);
-        
-            $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
-                        $OthrNode->appendChild($Id_Othr_Node);
-                            $SchmeNmNode->appendChild($PrtryNode);
-                        $OthrNode->appendChild($SchmeNmNode);
-                    $PrvtIdNode->appendChild($OthrNode);
-                $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
-            $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
+
+        $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);
+        $OthrNode->appendChild($Id_Othr_Node);
+        $SchmeNmNode->appendChild($PrtryNode);
+        $OthrNode->appendChild($SchmeNmNode);
+        $PrvtIdNode->appendChild($OthrNode);
+        $Id_CdtrSchmeId_Node->appendChild($PrvtIdNode);
+        $CdtrSchmeIdNode->appendChild($Id_CdtrSchmeId_Node);
         $PmtInfNode->appendChild($CdtrSchmeIdNode);
-        
+
         //Add it to the batchArray.       
         $this->batchArray[$type."::".$date]['node'] = $PmtInfNode;
         $this->batchArray[$type."::".$date]['ctrlSum'] = $CtrlSumNode;
         $this->batchArray[$type."::".$date]['nbOfTxs'] = $NbOfTxsNode;
-        
+
         //Return the batch array for this type and date.
         return $this->batchArray[$type."::".$date];
     }//getBatch

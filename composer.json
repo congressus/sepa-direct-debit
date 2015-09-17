@@ -1,0 +1,18 @@
+{
+  "name": "congressus/sepa-direct-debit",
+  "description": "congressus/sepa-direct-debit",
+  "keywords": [
+    "php",
+    "sepa",
+    "direct debit",
+    "xml"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=5.2"
+  },
+  "autoload": {
+    "classmap": ["/"]
+  }
+}
