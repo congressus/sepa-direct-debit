@@ -453,8 +453,10 @@ class SEPASDD {
             //Check if the config has the required parameter
             if ( array_key_exists($requirement,$config) ) {
                 //It exists, check if not empty
-                if ( empty($config[$requirement]) ){
-                    return $requirement." is empty.";
+                if($requirement == 'batch' && !isset($config[$requirement])) {
+                    return = $requirement . " is empty.";
+                } else if (empty($config[$requirement]) && $requirement != 'batch') {
+                    return = $requirement . " is empty.";
                 }
             }else{
                 return $requirement." does not exist.";
