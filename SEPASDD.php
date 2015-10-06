@@ -342,6 +342,7 @@ class SEPASDD {
             $CstmrDrctDbtInitnNode->appendChild($PmtInfNode);
         }else{
             //Update the batch metrics
+	    $batch['ctrlSum']->nodeValue = str_replace('.','',$batch['ctrlSum']->nodeValue); #For multiple saves
             $batch['ctrlSum']->nodeValue += $payment['amount'];
             $batch['nbOfTxs']->nodeValue++;
             
@@ -645,6 +646,7 @@ class SEPASDD {
      * @return The decimal
      */
     private function intToDecimal($int){
+	$int = str_replace(".","",$int); //For cases where the int is already an decimal.
         $before = substr($int, 0, -2);
         $after = substr($int, -2);
         if( empty($before) ){
@@ -671,6 +673,7 @@ class SEPASDD {
      * @return The decimal sum of the array
      */
     private function calcTotalAmount($array){
+	var_dump($array);
         $ints = array();
         $sum = 0;
         foreach($array as $decimal){

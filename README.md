@@ -142,6 +142,7 @@ After this, please reinitialize the class if you want to create another file.
 ###3.4 Adding custom fields
 
 SEPA SDD has a special method for adding custom fields. This method is called addCustomNode.
+It is important to know that you will have to save the direct debit before and after calling this.
 The required arguments are:
 
 - parent_XPATH:     The XPATH selector of the parent.
@@ -151,13 +152,30 @@ The required arguments are:
 
 ####Example:
 
-Add the postal address for a Debtor
+Add the postal address for the last inserted Debtor. 
+
+Caution, you should know what you are doing here.
+Refer to the SEPA Direct Debit Core Rulebook and the XSD before using this. 
 
 ```php
+$payment = array("name" => "Test von Testenstein",
+                 "IBAN" => "NL50BANK1234567890",
+                 "BIC" => "BANKNL2A",
+                 "amount" => "1000",
+                 "type" => "FRST",
+                 "collection_date" => "2013-07-12",
+                 "mandate_id" => "1234",
+                 "mandate_date" => "2009-11-01",
+                 "description" => "Test Transaction"
+                );
+
 try{
+    $SEPASDD->addPayment($payment);
+    $SEPASDD->save();
     $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr","PstlAdr");
     $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr/PstlAdr","AdrLine","Rode Weeshuisstraat 25");
     $SEPASDD->addCustomNode("//Document/CstmrDrctDbtInitn/PmtInf[last()]/DrctDbtTxInf[last()]/Dbtr/PstlAdr","AdrLine","9712 ET Groningen");
+    $SEPASDD->save();
 }catch(Exception $e){
     echo $e->getMessage();
 }
