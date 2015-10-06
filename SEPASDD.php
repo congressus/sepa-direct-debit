@@ -38,12 +38,10 @@ class SEPASDD {
     function __construct($config){
         //Check the config
         $config_validator = $this->validateConfig($config);
-        if($config_validator){
-            $this->config = $config;
-        }else{
-            throw new Exception("Invalid config file: ".$config_validator);
+        if($config_validator !== true){
+	    throw new Exception("Invalid config file: ".$config_validator);   
         }
-        
+        $this->config = $config;
 
         //Prepare the document
         $this->prepareDocument();
@@ -448,7 +446,8 @@ class SEPASDD {
                           "creditor_id",
                           "currency");
         $functions = array("IBAN" => "validateIBAN",
-                           "BIC" => "validateBIC");
+                           "BIC" => "validateBIC",
+			   "batch" => "validateBatch");
         
         foreach ( $required as $requirement ) {
             //Check if the config has the required parameter
@@ -466,7 +465,7 @@ class SEPASDD {
         foreach ( $functions as $target => $function ){
             //Check if it is even there in the config
             if ( array_key_exists($target,$config) ) {
-                //Perform the RegEx
+                //Perform the validation
                 $function_result = call_user_func("SELF::".$function,$config[$target]);
                 if ( $function_result ){
                     continue;
@@ -532,6 +531,15 @@ class SEPASDD {
         return true;
     }//validatePayment
     
+    /**
+     * Validate an batch config option.
+     * @param $batch the boolean to check.
+     * @return BOOLEAN TRUE if valid, FALSE if invalid.
+     */
+    public static function validateBatch($batch){
+        return is_bool($batch);
+    }//validateBatch
+
     /**
      * Validate an IBAN Number.
      * @param $IBAN the IBAN number to check.
@@ -673,7 +681,6 @@ class SEPASDD {
      * @return The decimal sum of the array
      */
     private function calcTotalAmount($array){
-	var_dump($array);
         $ints = array();
         $sum = 0;
         foreach($array as $decimal){
