@@ -15,7 +15,7 @@ $payment = array("name" => "Test von Testenstein",
                  "type" => "FRST",
                  "collection_date" => date("Y-m-d"),
                  "mandate_id" => "1234",
-                 "mandate_date" => date("Y-m-d"),
+                 "mandate_date" => date("2014-02-01"),
                  "description" => "Test transaction"
                 );                
 try{

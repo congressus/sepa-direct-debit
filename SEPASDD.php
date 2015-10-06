@@ -265,7 +265,7 @@ class SEPASDD {
             $UstrdNode->nodeValue       = htmlentities($payment['description'], ENT_QUOTES, 'UTF-8' );     
         }
 
-        $EndToEndIdNode->nodeValue      = $this->makeId();
+        $EndToEndIdNode->nodeValue      = ( empty($payment['end_to_end_id']) ? $this->makeId() : $payment['end_to_end_id']);
         
         //Fold the nodes, if batch is enabled, some of this will be done by the batch.
         if($this->config['batch'] == false){
@@ -498,7 +498,8 @@ class SEPASDD {
                            "amount" => "validateAmount",
                            "collection_date" => "validateDate",
                            "mandate_date" => "validateMandateDate",
-                           "type" => "validateDDType");
+                           "type" => "validateDDType",
+                           "end_to_end_id" => "validateEndToEndId");
         
         foreach ( $required as $requirement ) {
             //Check if the config has the required parameter
@@ -521,7 +522,7 @@ class SEPASDD {
                 if ( $function_result === true ){
                     continue;
                 }else{
-                    return $target." does not validate.";
+                    return $target." does not validate: ".$function_result;
                 }
             }  
             
@@ -543,6 +544,23 @@ class SEPASDD {
             return false;
         }
     }//validateIBAN
+
+    /**
+     * Validate an EndToEndId.
+     * @param $EndToEndId the EndToEndId to check.
+     * @return BOOLEAN TRUE if valid, error string if invalid.
+     */
+    public static function validateEndToEndId($EndToEndId){
+        $ascii = mb_check_encoding($EndToEndId,'ASCII');
+        $len = strlen($EndToEndId);
+        if ( $ascii && $len < 36 ) {
+            return True;
+        }elseif( !$ascii ){
+            return $EndToEndId." is not ASCII";
+        }else{
+            return $EndToEndId." is longer than 35 characters";        
+        }
+    }//validateEndToEndId
      
     /**
      * Validate a BIC number.Payment Information 

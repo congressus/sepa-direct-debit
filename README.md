@@ -69,8 +69,11 @@ SEPA SDD uses the addPayment method for creating payments, it requires a payment
 The following parameters are required:
 
 - name:			    The debtors name.
+			    Allowed: 140 ASCII characters (ISO 20022 MaxText140)
 - IBAN: 		    The debtor's International Bank Account Number.
+			    Allowed: /[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}/ (Note: This class does not perform check digit (index 2 and 3) validation. Please provide this yourself. 
 - BIC:			    The debtor's Bank Identification Code. (optional)
+			    Allowed: ([a-zA-Z]{4}[a-zA-Z]{2}[a-zA-Z0-9]{2}([a-zA-Z0-9]{3})?)
 - amount:		    The amount to transfer from debtor to creditor (IN CENTS).
 			        Allowed: int/string (NO SEPARATORS) e.g. EUR 10.00 has to be entered as 1000 or "1000"
 - type:			    The type of Direct Debit Transaction
@@ -79,9 +82,16 @@ The following parameters are required:
                     Allowed: ISO 8601 (YYYY-MM-DD). This date should be in the future, how far in
                              the future is dependent on the type of Direct Debit. See the definition.
 - mandate_id:       The ID of the written mandate from the debtor.
+		    Allowed: 35 ASCII characters. (ISO 20022 MaxText35)
 - mandate_date:     The date the mandate was signed.
                     Allowed: ISO 8601 (YYYY-MM-DD). For mandates before SEPA requirements this is: 2009-11-01.
 - description:      The description of the transaction.
+		    Allowed: 140 ASCII characters (ISO 20022 MaxText140)
+
+The following parameters are optional:
+
+- end_to_end_id:    The unique (for ALL transactions ever done by creditor) id referencing this payment.
+		    Allowed: 35 ASCII characters. (ISO 20022 MaxText35) 
 
 ####Example:
 
