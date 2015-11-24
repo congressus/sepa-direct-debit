@@ -58,6 +58,9 @@ class SEPASDD {
         //Create the document node
         $documentNode = $this->xml->createElement("Document");
         
+        //Cause the output to be formatted with newlines and indentation
+        $this->xml->formatOutput = true;
+        
         //set the namespace
         $documentAttributeXMLNS = $this->xml->createAttribute("xmlns");
         if ( isset($this->config['version']) && $this->config['version'] == "3") {
