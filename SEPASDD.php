@@ -227,8 +227,11 @@ class SEPASDD {
         if ( isset( $payment['BIC'] ) ) {
         	$DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
         	$FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
-        	if ( isset($this->config['version']) && $this->config['version'] == "3") {
-        	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BICFI");        	
+        	if($payment['BIC'] == "NOTPROVIDED"){
+        		$BIC_DbtrAgt_Node       = $this->xml->createElement("Othr");
+        		$BIC_DbtrAgt_ID_Node	= $this->xml->createElement("Id");
+        	}else if ( isset($this->config['version']) && $this->config['version'] == "3") {
+        	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BICFI");
         	}else{
         	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
         	}
@@ -249,7 +252,11 @@ class SEPASDD {
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
 
         if ( isset( $payment['BIC'] ) ) {
-            $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
+        	if($payment['BIC'] == "NOTPROVIDED"){
+        		$BIC_DbtrAgt_ID_Node->nodeValue = "NOTPROVIDED";
+        	}else{
+            	$BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
+        	}
         }
         
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
@@ -319,6 +326,9 @@ class SEPASDD {
             $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
             
             if ( isset( $payment['BIC'] ) ) {
+			            	if( isset( $BIC_DbtrAgt_ID_Node )){
+			            		$BIC_DbtrAgt_Node->appendChild($BIC_DbtrAgt_ID_Node);
+			            	}
                     	$FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
                 	$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
             	$DrctDbtTxInfNode->appendChild($DbtrAgtNode);
