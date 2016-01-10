@@ -2,7 +2,7 @@
 
 <table>
 <tr><td>Author:</td><td>Congressus, The Netherlands</td></tr> 
-<tr><td>Date:</td><td>14-05-2013</td></tr> 
+<tr><td>Date:</td><td>10-01-2016</td></tr> 
 <tr><td>Description</td><td>A PHP class to create Sepa Direct Debit XML Files</td></tr> 
 </table>
 ##1. INSTALLATION
@@ -93,6 +93,8 @@ The following parameters are optional:
 - end_to_end_id:    The unique (for ALL transactions ever done by creditor) id referencing this payment.
 		    Allowed: 35 ASCII characters. (ISO 20022 MaxText35) 
 
+The method will return the end_to_end_id.
+
 ####Example:
 
 ```php
@@ -114,7 +116,7 @@ Then use the addPayment method to add the payment to the file:
 
 ```php
 try{
-    $SEPASDD->addPayment($payment);
+    $endToEndId = $SEPASDD->addPayment($payment);
 }catch(Exception $e){
     echo $e->getMessage();
 }
@@ -124,7 +126,7 @@ You can use this method multiple times to add more payments.
 
 ###3.3 Save the file
 
-To save the file, use the "save" method, this will return the XML as a string.
+To save the file, use the `save` method, this will return the XML as a string.
 If you want to save to file, you have to do this yourself.
 
 ####Example:
@@ -139,6 +141,69 @@ try{
 
 After this, please reinitialize the class if you want to create another file.
 
+
+###3.4 Get the summary from the direct debit
+
+If you want to have some feedback on the direct debit (either before or after saving),
+you can use the `getDirectDebitInfo()` method. This will return an array in the following format:
+
+```
+Batch mode:
+Array
+(
+    [MessageId] => "100120165539-15a2054e7b05"
+    [TotalTransactions] => 3
+    [TotalAmount] => "3000"
+    [FirstCollectionDate] => "2016-01-10"
+    [Batches] => Array
+        (
+            [0] => Array
+                (
+                    [CollectionDate] => "2016-01-10"
+                    [Type] => "FRST"
+                    [BatchId] => "Test-d1837e0f72cb"
+                    [BatchTransactions] => 2
+                    [BatchAmount] => "2000"
+                )
+
+            [1] => Array
+                (
+                    [CollectionDate] => "2016-01-10"
+                    [Type] => "RCUR"
+                    [BatchId] => "Test-145750c3b3a8"
+                    [BatchTransactions] => 1
+                    [BatchAmount] => "1000"
+                )
+
+        )
+
+)
+
+Non Batch mode:
+Array
+(
+    [MessageId] => "100120161833-fbba1f5fc10a"
+    [TotalTransactions] => 3
+    [TotalAmount] => "3000"
+    [FirstCollectionDate] => "2016-01-10"
+)
+
+
+
+
+```
+
+####Example:
+
+```php
+try{
+    $SEPASDD->save();
+}catch(Exception $e){
+    echo $e->getMessage();
+}
+```
+
+After this, please reinitialize the class if you want to create another file.
 ###3.4 Adding custom fields
 
 SEPA SDD has a special method for adding custom fields. This method is called addCustomNode.
@@ -192,12 +257,11 @@ Will create
 
 ###3.5 Validation
 
-To validate against the pain.008.001.02 schema definition, you can
+To validate against the pain.008.001.02 or pain.008.001.03 schema definition, you can
 use the validate() method. This requires the XML as string as argument.
 
 #####Note: 
-Some banks allow not specifying a BIC, and so does SEPASDD. However it is not
-schema compliant and the schema WILL NOT validate.
+Some banks allow not specifying a BIC, and so does SEPASDD.
 
 ####Example
 
@@ -215,7 +279,7 @@ try{
 
 MIT LICENSE
 
- Copyright (c) 2013 Congressus, The Netherlands
+ Copyright (c) 2016 Congressus, The Netherlands
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation

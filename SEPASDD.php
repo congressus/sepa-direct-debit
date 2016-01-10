@@ -1,6 +1,6 @@
 <?php
 /*
- Copyright (c) 2013 Congressus, The Netherlands
+ Copyright (c) 2016 Congressus, The Netherlands
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -26,11 +26,11 @@
 
 
 /**
- * SEPA SSD (Sepa Direct Debit) 2.0
+ * SEPA SSD (Sepa Direct Debit) 2.1
  * This class creates a Sepa Direct Debit XML File.
  */
 class SEPASDD {
-    
+
     private $config;
     private $XML;
     private $batchArray = array();
@@ -54,6 +54,10 @@ class SEPASDD {
     private function prepareDocument(){
         //Create the XML Instance
         $this->xml = new DOMDocument("1.0","UTF-8");
+        
+        //Set formatting options
+        $this->xml->preserveWhiteSpace = false;
+        $this->xml->formatOutput = true;
         
         //Create the document node
         $documentNode = $this->xml->createElement("Document");
@@ -157,15 +161,18 @@ class SEPASDD {
             $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
             $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
             $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
-            if ( isset( $this->config['BIC'] ) ) {
-            	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-            	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+            $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+            $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+            if ( isset( $this->config['BIC'] ) ) { 
             	if ( isset($this->config['version']) && $this->config['version'] == "3") {
             	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
             	}else{
             	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
             	}
-            }
+            }else{
+				$Othr_CdtrAgt_Node			= $this->xml->createElement("Othr");
+				$Id_Othr_CdtrAgt_Node		= $this->xml->createElement("Id"); 
+			}
             $ChrgBrNode             = $this->xml->createElement("ChrgBr");
             $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
             $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
@@ -195,7 +202,9 @@ class SEPASDD {
             $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
             if ( isset( $this->config['BIC'] ) ) {
             	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
-            }
+            }else{
+				$Id_Othr_CdtrAgt_Node->nodeValue    = "NOTPROVIDED";
+			}
             $ChrgBrNode->nodeValue          = "SLEV";
 
             if( version_compare(PHP_VERSION, '5.4.0') >= 0){
@@ -221,15 +230,18 @@ class SEPASDD {
         $MndtRltdInfNode        = $this->xml->createElement("MndtRltdInf");
         $MndtIdNode             = $this->xml->createElement("MndtId");
         $DtOfSgntrNode          = $this->xml->createElement("DtOfSgntr");
-        if ( isset( $payment['BIC'] ) ) {
-        	$DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
-        	$FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
+        $DbtrAgtNode            = $this->xml->createElement("DbtrAgt");
+        $FinInstnId_DbtrAgt_Node= $this->xml->createElement("FinInstnId");
+        if ( isset( $payment['BIC'] ) ) { 
         	if ( isset($this->config['version']) && $this->config['version'] == "3") {
         	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BICFI");        	
         	}else{
         	    $BIC_DbtrAgt_Node       = $this->xml->createElement("BIC");
         	}
-        }
+        }else{
+			$Othr_DbtrAgt_Node       = $this->xml->createElement("Othr");
+			$Id_Othr_DbtrAgt_Node       = $this->xml->createElement("Id");
+		}
         $DbtrNode               = $this->xml->createElement("Dbtr");
         $Nm_Dbtr_Node           = $this->xml->createElement("Nm");
         $DbtrAcctNode           = $this->xml->createElement("DbtrAcct");
@@ -245,9 +257,11 @@ class SEPASDD {
         $MndtIdNode->nodeValue          = $payment['mandate_id'];
         $DtOfSgntrNode->nodeValue       = $payment['mandate_date'];
 
-        if ( isset( $payment['BIC'] ) ) {
+        if ( isset( $payment['BIC'] ) ) { 
             $BIC_DbtrAgt_Node->nodeValue    = $payment['BIC'];
-        }
+        }else{
+			$Id_Othr_DbtrAgt_Node->nodeValue = "NOTPROVIDED";
+		}
         
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
             $Nm_Dbtr_Node->nodeValue    = htmlentities($payment['name'], ENT_XML1, 'UTF-8' );
@@ -288,7 +302,12 @@ class SEPASDD {
                 $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
             $PmtInfNode->appendChild($CdtrAcctNode);
             
+			if ( isset( $payment['BIC'] ) ) { 
                     $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            }else{
+						$Othr_CdtrAgt_Node->appendChild($Id_Othr_CdtrAgt_Node);
+				    $FinInstnId_CdtrAgt_Node->appendChild($Othr_CdtrAgt_Node);
+			}
                 $CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
             $PmtInfNode->appendChild($CdtrAgtNode);
             
@@ -315,11 +334,14 @@ class SEPASDD {
                 $DrctDbtTxNode->appendChild($MndtRltdInfNode);
             $DrctDbtTxInfNode->appendChild($DrctDbtTxNode);
             
-            if ( isset( $payment['BIC'] ) ) {
-                    	$FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);
-                	$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
-            	$DrctDbtTxInfNode->appendChild($DbtrAgtNode);
-            }
+            if ( isset( $payment['BIC'] ) ) { 
+                    $FinInstnId_DbtrAgt_Node->appendChild($BIC_DbtrAgt_Node);	
+            }else{
+						$Othr_DbtrAgt_Node->appendChild($Id_Othr_DbtrAgt_Node);
+					$FinInstnId_DbtrAgt_Node->appendChild($Othr_DbtrAgt_Node);
+		    }	
+				$DbtrAgtNode->appendChild($FinInstnId_DbtrAgt_Node);
+            $DrctDbtTxInfNode->appendChild($DbtrAgtNode);
                 $DbtrNode->appendChild($Nm_Dbtr_Node);
             $DrctDbtTxInfNode->appendChild($DbtrNode);
             
@@ -347,7 +369,8 @@ class SEPASDD {
             //Add to the batch
             $batch['node']->appendChild($DrctDbtTxInfNode);
         }
-        
+
+        return $EndToEndIdNode->nodeValue;
     }//addPayment
     
     /**
@@ -453,7 +476,7 @@ class SEPASDD {
             //Check if the config has the required parameter
             if ( array_key_exists($requirement,$config) ) {
                 //It exists, check if not empty
-                if ( empty($config[$requirement]) ){
+                if ( $config[$requirement] !== False && empty($config[$requirement]) ){
                     return $requirement." is empty.";
                 }
             }else{
@@ -546,12 +569,53 @@ class SEPASDD {
      * @return BOOLEAN TRUE if valid, FALSE if invalid.
      */
     public static function validateIBAN($IBAN){
-        $result = preg_match("/[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}/",$IBAN);
-        if ( $result > 0 && $result !== false){
-            return true;
-        }else{
-            return false;
-        }
+        $result = preg_match("/[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}/",$IBAN);
+        if ($result == 0 || $result === False){
+			return False;
+		}
+
+		$indexArray = array_flip(['0','1','2','3','4','5','6','7','8','9','A','B','C',
+					   'D','E','F','G','H','I','J','K','L','M','N','O','P',
+					   'Q','R','S','T','U','V','W','X','Y','Z']);
+
+		$IBAN = strtoupper($IBAN);
+		$IBAN = substr($IBAN,4).substr($IBAN,0,4); // Place CC and Check at back
+		
+		$IBANArray = str_split($IBAN);
+		$IBANDecimal = "";
+		foreach ($IBANArray as $char){
+			$IBANDecimal .= $indexArray[$char]; //Convert the iban to decimals
+		} 
+
+		//To avoid the big number issues, we split the modulus into iterations.
+		
+		//First chunk is 9, the rest are modulus (max 2) + 7, last one is whatever is left (2 + < 7).
+		$startchunk = substr($IBANDecimal,0,9);
+		$startmod = intval($startchunk) % 97;	
+		
+		$IBANDecimal = substr($IBANDecimal,9);
+		$chunks = floor(strlen($IBANDecimal)/7);
+		$remainder = strlen($IBANDecimal) % 7;
+		
+		for($i = 0;$i < $chunks;$i++){
+			$IBANDecimal = $startmod.$IBANDecimal;
+			$startchunk = substr($IBANDecimal,0,7);
+			$startmod = intval($startchunk) % 97;	
+			$IBANDecimal = substr($IBANDecimal,7);
+		}
+		
+		//Check if we have a chunk with less than 7 numbers.
+		if($remainder != 0){
+			$endmod = intval($startmod.$IBANDecimal) % 97;
+		}else{
+			$endmod = $startmod;
+		}
+		if($endmod == 1){
+			return True;
+		}else{
+			return False;
+		} 
+		
     }//validateIBAN
 
     /**
@@ -616,7 +680,7 @@ class SEPASDD {
 		$beginOfToday = strtotime(date("Y-m-d") . " 00:00");
 		
 		if ($timeStamp > $beginOfToday) {
-			return "mandate_date " . $date . " must be at least 1 day later then current day " . date("Y-m-d");
+			return "mandate_date " . $date . " must be at least 1 day earlier then current day " . date("Y-m-d");
 		}
         
 		return true;
@@ -766,15 +830,19 @@ class SEPASDD {
         $CdtrAcctNode           = $this->xml->createElement("CdtrAcct");
         $Id_CdtrAcct_Node       = $this->xml->createElement("Id");
         $IBAN_CdtrAcct_Node     = $this->xml->createElement("IBAN");
-        if ( isset( $this->config['BIC'] ) ) {
-        	$CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
-        	$FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+        $CdtrAgtNode            = $this->xml->createElement("CdtrAgt");
+        $FinInstnId_CdtrAgt_Node= $this->xml->createElement("FinInstnId");
+        if ( isset( $this->config['BIC'] ) ) { 
+        	
         	if ( isset($this->config['version']) && $this->config['version'] == "3") {
         	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BICFI");
         	}else{
         	    $BIC_CdtrAgt_Node       = $this->xml->createElement("BIC");
             }
-        }
+        }else{
+			$Othr_CdtrAgt_Node 			= $this->xml->createElement("Othr");
+			$Id_Othr_CdtrAgt_Node       = $this->xml->createElement("Id");
+		}
         $ChrgBrNode             = $this->xml->createElement("ChrgBr");
         $CdtrSchmeIdNode        = $this->xml->createElement("CdtrSchmeId");
         $Nm_CdtrSchmeId_Node    = $this->xml->createElement("Nm");
@@ -804,7 +872,9 @@ class SEPASDD {
         $IBAN_CdtrAcct_Node->nodeValue  = $this->config['IBAN'];
         if ( isset( $this->config['BIC'] ) ) {
         	$BIC_CdtrAgt_Node->nodeValue    = $this->config['BIC'];
-        }
+        }else{
+			$Id_Othr_CdtrAgt_Node->nodeValue = "NOTPROVIDED";
+		}
         $ChrgBrNode->nodeValue          = "SLEV";
 
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
@@ -838,11 +908,16 @@ class SEPASDD {
             $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
         $PmtInfNode->appendChild($CdtrAcctNode);
         
-        if ( isset( $this->config['BIC'] ) ) {
-                	$FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
-            	$CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
-        	$PmtInfNode->appendChild($CdtrAgtNode);
-        }
+        if ( isset( $this->config['BIC'] ) ) { 
+                $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
+            	
+        }else{
+					$Othr_CdtrAgt_Node->appendChild($Id_Othr_CdtrAgt_Node);
+				$FinInstnId_CdtrAgt_Node->appendChild($Othr_CdtrAgt_Node);
+		}	
+			$CdtrAgtNode->appendChild($FinInstnId_CdtrAgt_Node);
+        $PmtInfNode->appendChild($CdtrAgtNode);
+        
         $PmtInfNode->appendChild($ChrgBrNode);
         
             $CdtrSchmeIdNode->appendChild($Nm_CdtrSchmeId_Node);            
@@ -858,6 +933,7 @@ class SEPASDD {
         $this->batchArray[$type."::".$date]['node'] = $PmtInfNode;
         $this->batchArray[$type."::".$date]['ctrlSum'] = $CtrlSumNode;
         $this->batchArray[$type."::".$date]['nbOfTxs'] = $NbOfTxsNode;
+        $this->batchArray[$type."::".$date]['pmtInfId'] = $PmtInfIdNode;
         
         //Return the batch array for this type and date.
         return $this->batchArray[$type."::".$date];
@@ -866,4 +942,60 @@ class SEPASDD {
     public function isEmpty() {
         return empty($this->batchArray);
     }
+    
+    public function getDirectDebitInfo(){
+		$info = array();
+		$info['MessageId'] = $this->xml->getElementsByTagName("MsgId")->item(0)->nodeValue;
+		$info['TotalTransactions'] = 0;
+		$info['TotalAmount'] = 0;
+		$info['FirstCollectionDate'] = NULL;
+		if ( $this->config['batch'] ) {
+			$batches = array();
+			foreach ( $this->batchArray as $key => $batch ){
+				$batchInfo = array();
+				$batchKey = explode("::",$key);
+				$date = $batchKey[1];
+				$batchInfo['CollectionDate'] = $date;
+				
+				$dateObject = DateTime::createFromFormat("Y-m-d",$date);
+				if($info['FirstCollectionDate'] == NULL || $dateObject > $info['FirstCollectionDate']){
+					$info['FirstCollectionDate'] = $dateObject;
+				}
+				
+				$batchInfo['Type'] = $batchKey[0];
+				$batchInfo['BatchId'] = $batch['pmtInfId']->nodeValue;
+				$txs = intval($batch['nbOfTxs']->nodeValue);
+				$batchInfo['BatchTransactions'] = $txs;
+				$info['TotalTransactions'] += $txs;
+				$amount = intval($this->decimalToInt($batch['ctrlSum']->nodeValue));
+				$batchInfo['BatchAmount'] = strval($amount);
+				$info['TotalAmount'] += $amount;
+				
+                
+                $batches[] = $batchInfo;
+            }
+            $info['Batches'] = $batches;
+	    }else{
+			$trxCount = $this->xml->getElementsByTagName("DrctDbtTxInf");
+			$info['TotalTransactions'] = $trxCount->length;
+			$trxAmounts = $this->xml->getElementsByTagName("InstdAmt");
+			$trxAmountArray = array();
+			foreach ( $trxAmounts as $amount ){
+				$trxAmountArray[] = $amount->nodeValue;
+			}
+			$info['TotalAmount'] = $this->calcTotalAmount($trxAmountArray);
+			$dates = $this->xml->getElementsByTagName("ReqdColltnDt");
+			$datesCount = $dates->length;
+			for($idx=0; $idx<$datesCount; $idx++){
+				$dateObject = DateTime::createFromFormat("Y-m-d",$dates->item($idx)->nodeValue);
+				if($info['FirstCollectionDate'] == NULL || $dateObject > $info['FirstCollectionDate']){
+					$info['FirstCollectionDate'] = $dateObject;
+				}
+			}
+		}
+	    $info['TotalAmount'] = strval($this->decimalToInt($info['TotalAmount']));
+	    $info['FirstCollectionDate'] = $info['FirstCollectionDate']->format('Y-m-d');
+		return $info;
+	}
 }
+?>
