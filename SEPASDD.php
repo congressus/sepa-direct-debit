@@ -594,10 +594,10 @@ class SEPASDD {
 		$startmod = intval($startchunk) % 97;	
 		
 		$IBANDecimal = substr($IBANDecimal,9);
-		$chunks = floor(strlen($IBANDecimal)/7);
+		$chunks = ceil(strlen($IBANDecimal)/7);
 		$remainder = strlen($IBANDecimal) % 7;
 		
-		for($i = 0;$i < $chunks;$i++){
+		for($i = 0;$i <= $chunks;$i++){
 			$IBANDecimal = $startmod.$IBANDecimal;
 			$startchunk = substr($IBANDecimal,0,7);
 			$startmod = intval($startchunk) % 97;	
