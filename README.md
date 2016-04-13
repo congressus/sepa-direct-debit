@@ -24,12 +24,14 @@ The following parameters are required:
 - IBAN: 	    The creditor's International Bank Account Number.
 - BIC:		    The creditor's Bank Identification Code. (optional)
 - batch:	    Whether to process as batch or as individual transactions .
-		        Allowed: true or false (MUST be boolean).
+		        Allowed: True or False (MUST be boolean).
 - creditor_id:	The creditor's id, contact your bank if you do not know this.
 - currency:	    The currency in which the amounts are defined. 
 		    Allowed: ISO 4217.
 - version:	    The PAIN.008.001 version. (optional)
 	            Allowed: 3
+- validate:     Whether to use the internal validation mechanisms for BIC and IBAN (Optional)
+                Allowed: True or False (MUST be boolean).
 
 #####Note:
 When setting batch to true, SEPASDD will create a batch for each Direct Debit

@@ -6,11 +6,12 @@ $config = array("name" => "Test",
                 "batch" => True,
                 "creditor_id" => "00000",
                 "currency" => "EUR",
+                //"validate" => False, <- Optional, will disable internal validation of BIC and IBAN.
 				"version" => "3"
                 );
                 
 $payment = array("name" => "Test von Testenstein",
-                 "IBAN" => "NL41BANK1234567890",
+                 "IBAN" => "NL40BANK1234567890",
                  //"BIC" => "BANKNL2A", <- Optional, banks may disallow BIC in future
                  "amount" => "1000",
                  "type" => "FRST",

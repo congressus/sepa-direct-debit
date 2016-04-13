@@ -37,11 +37,12 @@ class SEPASDD {
     
     function __construct($config){
         //Check the config
-        $config_validator = $this->validateConfig($config);
-        if($config_validator !== true){
-	    throw new Exception("Invalid config file: ".$config_validator);   
-        }
         $this->config = $config;
+        $config_validator = $this->validateConfig($config);
+        
+        if($config_validator !== true){
+            throw new Exception("Invalid config file: ".$config_validator);   
+        }
 
         //Prepare the document
         $this->prepareDocument();
@@ -568,7 +569,10 @@ class SEPASDD {
      * @param $IBAN the IBAN number to check.
      * @return BOOLEAN TRUE if valid, FALSE if invalid.
      */
-    public static function validateIBAN($IBAN){
+    public function validateIBAN($IBAN){
+        if( array_key_exists('validate',$this->config) &&  $this->config['validate'] == False ){
+            return True;
+        }
         $result = preg_match("/[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}/",$IBAN);
         if ($result == 0 || $result === False){
 			return False;
@@ -640,7 +644,10 @@ class SEPASDD {
      * @param $BIC the BIC number to check.
      * @return TRUE if valid, FALSE if invalid.
      */
-    public static function validateBIC($BIC){
+    public function validateBIC($BIC){
+        if( array_key_exists('validate',$this->config) &&  $this->config['validate'] == False ){
+            return True;
+        }
         $result = preg_match("([a-zA-Z]{4}[a-zA-Z]{2}[a-zA-Z0-9]{2}([a-zA-Z0-9]{3})?)",$BIC);
         if ( $result > 0 && $result !== false){
             return true;
