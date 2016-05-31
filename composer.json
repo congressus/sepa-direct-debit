@@ -1,6 +1,6 @@
 {
   "name": "congressus/sepa-direct-debit",
-  "description": "congressus/sepa-direct-debit",
+  "description": "Package to create SEPA Direct Debit XML (B2C, Business to Consumer only) files conform pain.008.001.02 or pain.008.001.03.",
   "keywords": [
     "php",
     "sepa",
