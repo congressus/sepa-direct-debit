@@ -103,7 +103,7 @@ class SEPASDD {
         
         //Set the values for the nodes
         $MsgIdNode->nodeValue = $this->makeMsgId();
-        $CreDtTmNode->nodeValue = date("c");
+        $CreDtTmNode->nodeValue = date('Y-m-d\TH:i:s', time());
 
        //If using lower than PHP 5.4.0, there is no ENT_XML1
         if( version_compare(PHP_VERSION, '5.4.0') >= 0){
