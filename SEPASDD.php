@@ -392,9 +392,9 @@ class SEPASDD {
         $domdoc = new DOMDocument();
         $domdoc->loadXML($xml);
         if ( isset($this->config['version']) && $this->config['version'] == "3") {
-            return $domdoc->schemaValidate("pain.008.001.03.xsd");
+            return $domdoc->schemaValidate(__dir__ . "/pain.008.001.03.xsd");
         }else{
-            return $domdoc->schemaValidate("pain.008.001.02.xsd");
+            return $domdoc->schemaValidate(__dir__ . "/pain.008.001.02.xsd");
         }
     }//validate
         
