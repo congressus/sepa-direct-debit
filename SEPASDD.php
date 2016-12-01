@@ -490,7 +490,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$config) ) {
                 //Perform the validation
-                $function_result = call_user_func("SELF::".$function,$config[$target]);
+                $function_result = call_user_func("static::".$function,$config[$target]);
                 if ( $function_result ){
                     continue;
                 }else{
@@ -542,7 +542,7 @@ class SEPASDD {
             //Check if it is even there in the config
             if ( array_key_exists($target,$payment) ) {
                 //Perform the RegEx
-                $function_result = call_user_func("SELF::".$function,$payment[$target]);
+                $function_result = call_user_func("static::".$function,$payment[$target]);
                 if ( $function_result === true ){
                     continue;
                 }else{
