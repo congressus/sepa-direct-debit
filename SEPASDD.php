@@ -30,7 +30,7 @@ namespace Congressus\SepaDirectDebit;
  * SEPA SSD (Sepa Direct Debit) 2.1.1
  * This class creates a Sepa Direct Debit XML File.
  */
-class SEPASDD
+class SepaSdd
 {
     /**
      * @var array
@@ -694,49 +694,130 @@ class SEPASDD
         if (array_key_exists('validate', $this->config) && $this->config['validate'] == false) {
             return true;
         }
-        $result = preg_match('/[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}/', $iBan);
+        $result = preg_match("/[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}/", $iBan);
+    
         if ($result == 0 || $result === false) {
             return false;
         }
-        
-        $indexArray = array_flip(['0','1','2','3','4','5','6','7','8','9','A','B','C',
-            'D','E','F','G','H','I','J','K','L','M','N','O','P',
-            'Q','R','S','T','U','V','W','X','Y','Z']
+    
+        $iBan = strtolower($iBan);
+        $countries = array(
+            'al' => 28,
+            'ad' => 24,
+            'at' => 20,
+            'az' => 28,
+            'bh' => 22,
+            'be' => 16,
+            'ba' => 20,
+            'br' => 29,
+            'bg' => 22,
+            'cr' => 21,
+            'hr' => 21,
+            'cy' => 28,
+            'cz' => 24,
+            'dk' => 18,
+            'do' => 28,
+            'ee' => 20,
+            'fo' => 18,
+            'fi' => 18,
+            'fr' => 27,
+            'ge' => 22,
+            'de' => 22,
+            'gi' => 23,
+            'gr' => 27,
+            'gl' => 18,
+            'gt' => 28,
+            'hu' => 28,
+            'is' => 26,
+            'ie' => 22,
+            'il' => 23,
+            'it' => 27,
+            'jo' => 30,
+            'kz' => 20,
+            'kw' => 30,
+            'lv' => 21,
+            'lb' => 28,
+            'li' => 21,
+            'lt' => 20,
+            'lu' => 20,
+            'mk' => 19,
+            'mt' => 31,
+            'mr' => 27,
+            'mu' => 30,
+            'mc' => 27,
+            'md' => 24,
+            'me' => 22,
+            'nl' => 18,
+            'no' => 15,
+            'pk' => 24,
+            'ps' => 29,
+            'pl' => 28,
+            'pt' => 25,
+            'qa' => 29,
+            'ro' => 24,
+            'sm' => 27,
+            'sa' => 24,
+            'rs' => 22,
+            'sk' => 24,
+            'si' => 19,
+            'es' => 24,
+            'se' => 24,
+            'ch' => 21,
+            'tn' => 24,
+            'tr' => 26,
+            'ae' => 23,
+            'gb' => 22,
+            'vg' => 24
+        );
+        $chars = array(
+            'a' => 10,
+            'b' => 11,
+            'c' => 12,
+            'd' => 13,
+            'e' => 14,
+            'f' => 15,
+            'g' => 16,
+            'h' => 17,
+            'i' => 18,
+            'j' => 19,
+            'k' => 20,
+            'l' => 21,
+            'm' => 22,
+            'n' => 23,
+            'o' => 24,
+            'p' => 25,
+            'q' => 26,
+            'r' => 27,
+            's' => 28,
+            't' => 29,
+            'u' => 30,
+            'v' => 31,
+            'w' => 32,
+            'x' => 33,
+            'y' => 34,
+            'z' => 35
         );
     
-        $iBan = strtoupper($iBan);
-        $iBan = substr($iBan, 4) . substr($iBan, 0, 4); // Place CC and Check at back
+        if (strlen($iBan) == $countries[substr($iBan, 0, 2)]) {
+            $movedChar = substr($iBan, 4) . substr($iBan, 0, 4);
+            $movedCharArray = str_split($movedChar);
+            $newString = '';
         
-        $iBanArray = str_split($iBan);
-        $iBanDecimal = '';
-        foreach ($iBanArray as $char) {
-            $iBanDecimal .= $indexArray[$char]; //Convert the iban to decimals
-        }
+            foreach ($movedCharArray AS $key  =>  $value) {
+                if (!is_numeric($movedCharArray[$key])) {
+                    $movedCharArray[$key] = $chars[$movedCharArray[$key]];
+                }
+                $newString .= $movedCharArray[$key];
+            }
         
-        //To avoid the big number issues, we split the modulus into iterations.
-        
-        //First chunk is 9, the rest are modulus (max 2) + 7, last one is whatever is left (2 + < 7).
-        $startChunk = substr($iBanDecimal, 0, 9);
-        $startMod = intval($startChunk) % 97;
-        
-        $iBanDecimal = substr($iBanDecimal, 9);
-        $chunks = ceil(strlen($iBanDecimal) / 7);
-        $remainder = strlen($iBanDecimal) % 7;
-        
-        for($i = 0; $i <= $chunks; $i++) {
-            $iBanDecimal = $startMod . $iBanDecimal;
-            $startChunk = substr($iBanDecimal, 0, 7);
-            $startMod = intval($startChunk) % 97;
-            $iBanDecimal = substr($iBanDecimal, 7);
-        }
-        
-        //Check if we have a chunk with less than 7 numbers.
-        if ($remainder != 0) {
-            $endMod = (int)$startMod . (int)$iBanDecimal % 97;
+            if (bcmod($newString, '97') == 1) {
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            $endMod = $startMod;
+            return false;
         }
-        return $endMod == 1;
     }
     
     /**
