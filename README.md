@@ -1,11 +1,11 @@
-#SEPA SDD (Sepa Direct Debit) 2.0
+# SEPA SDD (Sepa Direct Debit) 2.0
 
 <table>
 <tr><td>Author:</td><td>Congressus, The Netherlands</td></tr> 
 <tr><td>Date:</td><td>10-01-2016</td></tr> 
 <tr><td>Description</td><td>A PHP class to create Sepa Direct Debit XML Files</td></tr> 
 </table>
-##1. INSTALLATION
+## 1. INSTALLATION
 
 SEPA SDD requires PHP 5, no other libraries are required.
 
@@ -15,7 +15,7 @@ To install, copy the SEPASDD.php class to a folder on the webserver and include 
 require_once([path_from_webroot_to_folder]/SEPASDD.php);
 ```
 
-##2. CONFIGURATION
+## 2. CONFIGURATION
 
 SEPA SSD requires a config array, which is validated on initiation.
 The following parameters are required:
@@ -33,13 +33,13 @@ The following parameters are required:
 - validate:     Whether to use the internal validation mechanisms for BIC and IBAN (Optional)
                 Allowed: True or False (MUST be boolean).
 
-#####Note:
+##### Note:
 When setting batch to true, SEPASDD will create a batch for each Direct Debit
 transaction type ("FRST","RCUR", etc). and required collection date. This
 means that all "FRST" transactions with collection date 2014-01-30 will be 
 grouped in a batch.
 
-####Example:
+#### Example:
 
 ```php
 $config = array("name" => "Test",
@@ -51,9 +51,9 @@ $config = array("name" => "Test",
                 );
 ```
 
-##3. USAGE
+## 3. USAGE
 
-###3.1 Initialization
+### 3.1 Initialization
 
 Create an instance of the class with an configuration as such:
 
@@ -65,7 +65,7 @@ try{
 }
 ```
 
-###3.2 Create a payment
+### 3.2 Create a payment
 
 SEPA SDD uses the addPayment method for creating payments, it requires a payment array.
 The following parameters are required:
@@ -97,7 +97,7 @@ The following parameters are optional:
 
 The method will return the end_to_end_id.
 
-####Example:
+#### Example:
 
 ```php
 $payment = array("name" => "Test von Testenstein",
@@ -114,7 +114,7 @@ $payment = array("name" => "Test von Testenstein",
 
 Then use the addPayment method to add the payment to the file:
 
-####Example:
+#### Example:
 
 ```php
 try{
@@ -126,12 +126,12 @@ try{
 
 You can use this method multiple times to add more payments.
 
-###3.3 Save the file
+### 3.3 Save the file
 
 To save the file, use the `save` method, this will return the XML as a string.
 If you want to save to file, you have to do this yourself.
 
-####Example:
+#### Example:
 
 ```php
 try{
@@ -144,7 +144,7 @@ try{
 After this, please reinitialize the class if you want to create another file.
 
 
-###3.4 Get the summary from the direct debit
+### 3.4 Get the summary from the direct debit
 
 If you want to have some feedback on the direct debit (either before or after saving),
 you can use the `getDirectDebitInfo()` method. This will return an array in the following format:
@@ -195,7 +195,7 @@ Array
 
 ```
 
-####Example:
+#### Example:
 
 ```php
 try{
@@ -206,7 +206,7 @@ try{
 ```
 
 After this, please reinitialize the class if you want to create another file.
-###3.4 Adding custom fields
+### 3.4 Adding custom fields
 
 SEPA SDD has a special method for adding custom fields. This method is called addCustomNode.
 It is important to know that you will have to save the direct debit before and after calling this.
@@ -217,7 +217,7 @@ The required arguments are:
 - value:            Its value, default "".
 - attr:             An array containing key => value pairs defining the attributes.
 
-####Example:
+#### Example:
 
 Add the postal address for the last inserted Debtor. 
 
@@ -257,15 +257,15 @@ Will create
 </PstlAdr>
 ```
 
-###3.5 Validation
+### 3.5 Validation
 
 To validate against the pain.008.001.02 or pain.008.001.03 schema definition, you can
 use the validate() method. This requires the XML as string as argument.
 
-#####Note: 
+##### Note: 
 Some banks allow not specifying a BIC, and so does SEPASDD.
 
-####Example
+#### Example
 
 ```php
 try{
@@ -277,7 +277,7 @@ try{
 }
 ```
 
-##4 LICENSE
+## 4 LICENSE
 
 MIT LICENSE
 
