@@ -303,7 +303,7 @@ class SEPASDD {
                 $CdtrAcctNode->appendChild($Id_CdtrAcct_Node);
             $PmtInfNode->appendChild($CdtrAcctNode);
             
-			if ( isset( $config['BIC'] ) ) { 
+			if ( isset( $this->config['BIC'] ) ) { 
                     $FinInstnId_CdtrAgt_Node->appendChild($BIC_CdtrAgt_Node);
             }else{
 						$Othr_CdtrAgt_Node->appendChild($Id_Othr_CdtrAgt_Node);
