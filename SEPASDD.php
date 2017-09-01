@@ -386,7 +386,7 @@ class SEPASDD {
     
     /**
      * Function to validate xml against the pain.008.001.02 schema definition.
-     * @param $xml The xml, as a string, to validate agianst the schema.
+     * @param $xml The xml, as a string, to validate against the schema.
      */
     public function validate($xml){
         $domdoc = new DOMDocument();
