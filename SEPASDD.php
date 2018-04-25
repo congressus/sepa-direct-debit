@@ -589,37 +589,42 @@ class SEPASDD {
 		$IBANDecimal = "";
 		foreach ($IBANArray as $char){
 			$IBANDecimal .= $indexArray[$char]; //Convert the iban to decimals
-		} 
+		}
+		if (function_exists('bcmod')) {
+        return intval(bcmod($IBANDecimal,97)) === 1;
+    } else {
 
-		//To avoid the big number issues, we split the modulus into iterations.
-		
-		//First chunk is 9, the rest are modulus (max 2) + 7, last one is whatever is left (2 + < 7).
-		$startchunk = substr($IBANDecimal,0,9);
-		$startmod = intval($startchunk) % 97;	
-		
-		$IBANDecimal = substr($IBANDecimal,9);
-		$chunks = ceil(strlen($IBANDecimal)/7);
-		$remainder = strlen($IBANDecimal) % 7;
-		
-		for($i = 0;$i <= $chunks;$i++){
-			$IBANDecimal = $startmod.$IBANDecimal;
-			$startchunk = substr($IBANDecimal,0,7);
-			$startmod = intval($startchunk) % 97;	
-			$IBANDecimal = substr($IBANDecimal,7);
-		}
-		
-		//Check if we have a chunk with less than 7 numbers.
-		if($remainder != 0){
-			$endmod = intval($startmod.$IBANDecimal) % 97;
-		}else{
-			$endmod = $startmod;
-		}
-		if($endmod == 1){
-			return True;
-		}else{
-			return False;
-		} 
-		
+		    // Original Method: Does not work for italian IBAN numbers
+
+        //To avoid the big number issues, we split the modulus into iterations.
+        //First chunk is 9, the rest are modulus (max 2) + 7, last one is whatever is left (2 + < 7).
+        $startchunk = substr($IBANDecimal,0,9);
+        $startmod = intval($startchunk) % 97;
+
+        $IBANDecimal = substr($IBANDecimal,9);
+        $chunks = ceil(strlen($IBANDecimal)/7);
+        $remainder = strlen($IBANDecimal) % 7;
+
+        for($i = 0;$i <= $chunks;$i++){
+          $IBANDecimal = $startmod.$IBANDecimal;
+          $startchunk = substr($IBANDecimal,0,7);
+          $startmod = intval($startchunk) % 97;
+          $IBANDecimal = substr($IBANDecimal,7);
+        }
+
+        //Check if we have a chunk with less than 7 numbers.
+        if($remainder != 0){
+          $endmod = intval($startmod.$IBANDecimal) % 97;
+        }else{
+          $endmod = $startmod;
+        }
+        if($endmod == 1){
+          return True;
+        }else{
+          return False;
+        }
+
+        }
     }//validateIBAN
 
     /**
